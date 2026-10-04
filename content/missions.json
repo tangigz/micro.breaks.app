@@ -54,7 +54,7 @@
       "img": "flexed-biceps",
       "tile": "lilac",
       "videos": [
-        { "id": "BCUzHzpJLAI", "start": null, "end": null },
+        { "id": "BCUzHzpJLAI", "start": 40, "end": 170 },
         { "id": "MU_3eoa1-X0", "start": null, "end": null }
       ]
     }

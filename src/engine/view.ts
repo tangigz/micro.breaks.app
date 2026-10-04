@@ -1,4 +1,4 @@
-import { inMeeting } from './engine';
+import { inMeeting, videoTimeLeft } from './engine';
 import { inLunch, isWorkingDay, MIN, minuteOfDay } from './time';
 import type { State } from './types';
 
@@ -63,6 +63,8 @@ export function newTabView(s: State, now: number): NewTabView {
 }
 
 export interface MissionView {
+  /** A video mission: runs on the clock and ends with a button, not by being away. */
+  video: boolean;
   running: boolean;
   remainingMs: number;
   durationMs: number;
@@ -71,6 +73,7 @@ export interface MissionView {
 export function missionView(s: State, now: number): MissionView | null {
   const b = s.break;
   if (b?.phase !== 'mission') return null;
+  if (b.videoIndex != null) return { video: true, running: true, remainingMs: videoTimeLeft(b, now), durationMs: b.durationMs };
   const ran = b.runningSince != null ? now - b.runningSince : 0;
-  return { running: b.runningSince != null, remainingMs: Math.max(0, b.remainingMs - ran), durationMs: b.durationMs };
+  return { video: false, running: b.runningSince != null, remainingMs: Math.max(0, b.remainingMs - ran), durationMs: b.durationMs };
 }

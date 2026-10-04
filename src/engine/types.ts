@@ -40,6 +40,8 @@ export interface Break {
   /** Started with "Start a break now": free to cancel until the mission starts. */
   voluntary: boolean;
   openedAt: number;
+  /** When Start mission was clicked. */
+  startedAt?: number;
   videoIndex: number | null;
   /** The video's own length is not known yet: the player reports it once loaded. */
   awaitingVideoDuration?: boolean;
@@ -98,6 +100,7 @@ export type Input =
   | { type: 'switch_mission' }
   | { type: 'start_mission'; videoDurationMs?: number }
   | { type: 'video_duration'; ms: number }
+  | { type: 'video_done' }
   | { type: 'skip_open' }
   | { type: 'skip_cancel' }
   | { type: 'skip_answer'; value: number }

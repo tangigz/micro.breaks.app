@@ -35,6 +35,8 @@ Replaces the design's step screens (one step per screen, big pastel tile, 88 px 
 - "Paused" (amber ring, "Step away to continue.") only shows once some time has run and the user came back. Right after Start mission the ring is green and says "Leave the computer.": nothing is paused yet.
 - YouTube refuses embeds without a Referer, and extension pages send none. The extension adds one to its own player frames only (`src/background/youtube.ts`). This needs the `declarativeNetRequestWithHostAccess` permission and access to `www.youtube-nocookie.com`.
 - Until trim points are set, a video mission lasts the full length the player reports.
+- **Video missions run on the clock, not on being away.** The user is watching the screen, so touching the keyboard pauses nothing. When the video's length has passed, the countdown gives way to a button, "I've done the routine", which recharges the battery. Chrome stays locked until it is clicked.
+- Trim points set so far: "Sedentary Lifestyle? Daily Follow Along" (energy boost, video 1), 0:40 to 2:50.
 - "Back to work" closes the mission tab, so the user lands on what they had before. If it is the only tab, it becomes the new tab.
 
 ## Smaller rules, agreed as defaults

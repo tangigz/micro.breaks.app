@@ -59,7 +59,8 @@ test('lock: switching tab or opening one is sent back to the mission tab', async
   // Once the mission is done, Chrome is free again
   await engine.send({ type: 'start_mission' });
   await engine.send({ type: 'idle', state: 'locked' });
-  await engine.advance(5);
+  // Long enough for any mission. A video one ends with its button.
+  if ((await engine.advance(15)).break) await engine.send({ type: 'video_done' });
   await home.bringToFront();
   await home.waitForTimeout(600);
   expect(await activeTab(home)).toMatch(/newtab\.html$/);

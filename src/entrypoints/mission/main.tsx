@@ -48,7 +48,7 @@ function Mission() {
   const prompt = b?.phase === 'prompt' && !b.skip;
 
   return (
-    <Frame>
+    <Frame tall={timer?.video}>
       {/* Warm prompt glow, top right */}
       {prompt && (
         <div

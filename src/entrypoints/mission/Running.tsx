@@ -30,7 +30,7 @@ export function Running({ b, timer }: { b: Break; timer: MissionView }) {
   const m = mission(b.missionId);
   const paused = !timer.running && timer.remainingMs < timer.durationMs;
   return m.videos && b.videoIndex != null ? (
-    <Video b={b} timer={timer} paused={paused} />
+    <Video b={b} timer={timer} />
   ) : (
     <Ring b={b} timer={timer} paused={paused} />
   );
@@ -158,13 +158,15 @@ function useVideoDuration(frame: React.RefObject<HTMLIFrameElement | null>, want
   }, [frame, wanted]);
 }
 
-/** Video mission: a 16:9 YouTube player, the countdown below. Watching without input counts as away. */
-function Video({ b, timer, paused }: { b: Break; timer: MissionView; paused: boolean }) {
+/** Video mission: a 16:9 YouTube player, the countdown below. It runs on the clock and ends with a button. */
+function Video({ b, timer }: { b: Break; timer: MissionView }) {
   const m = mission(b.missionId);
   const videos = m.videos!;
   const video = videos[b.videoIndex!]!;
   const frame = useRef<HTMLIFrameElement>(null);
   useVideoDuration(frame, !!b.awaitingVideoDuration);
+
+  const over = !b.awaitingVideoDuration && timer.remainingMs <= 0;
 
   const params = new URLSearchParams({ autoplay: '1', rel: '0', playsinline: '1', enablejsapi: '1' });
   if (video.start != null) params.set('start', String(video.start));
@@ -182,20 +184,41 @@ function Video({ b, timer, paused }: { b: Break; timer: MissionView; paused: boo
         className="h-[585px] w-[1040px] rounded-panel border border-line bg-[#141416]"
       />
       <div className="flex items-center gap-8">
-        <div
-          role="timer"
-          aria-live="off"
-          aria-label={timerLabel(timer.remainingMs, paused)}
-          className={`text-[88px] leading-[88px] font-bold tracking-[-0.045em] ${paused ? 'text-ink-2' : ''}`}
-        >
-          {clock(timer.remainingMs)}
-        </div>
+        {over ? (
+          <button
+            autoFocus
+            className="inline-flex h-[72px] shrink-0 cursor-pointer items-center gap-3 rounded-full bg-ink px-10 text-[20px] font-semibold text-on-ink"
+            onClick={() => void send({ type: 'video_done' })}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+            I've done the routine
+          </button>
+        ) : (
+          <div
+            role="timer"
+            aria-live="off"
+            aria-label={timerLabel(timer.remainingMs, false)}
+            className="text-[88px] leading-[88px] font-bold tracking-[-0.045em]"
+          >
+            {clock(timer.remainingMs)}
+          </div>
+        )}
         <div className="flex grow flex-col gap-1">
           <div className="text-[28px] leading-[34px] font-bold tracking-[-0.015em]">
             {m.name} <span className="text-ink-2">· video {b.videoIndex! + 1} of {videos.length}</span>
           </div>
           <div className="text-[17px] leading-6 text-ink-2">
-            <b className="font-semibold text-ink">Follow along.</b> Hands off the keyboard.
+            {over ? (
+              <>
+                <b className="font-semibold text-ink">The video is over.</b> Confirm to recharge your battery.
+              </>
+            ) : (
+              <>
+                <b className="font-semibold text-ink">Follow along.</b> Hands off the keyboard.
+              </>
+            )}
           </div>
         </div>
         <SkipLink />

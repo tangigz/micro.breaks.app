@@ -54,36 +54,45 @@ test('mission: the ring counts down only while away, then "Recharged."', async (
   await expect(home.getByText('Next break in')).toBeVisible();
 });
 
-test('video mission: the YouTube player loads and the mission takes the length of the video', async ({ context, engine }) => {
+test('video mission: plays the trimmed video on the clock, then asks to confirm', async ({ context, engine }) => {
   await engine.setClock(2030, 1, 7, 10);
   await engine.begin();
+  // Draw until the energy boost mission: its first video is trimmed to 0:40–2:50
   let state = await engine.send({ type: 'start_break_now' });
-  while (!['stretch', 'boost'].includes(state.break!.missionId)) {
+  while (state.break!.missionId !== 'boost') {
     await engine.send({ type: 'cancel_break' });
     state = await engine.send({ type: 'start_break_now' });
   }
   const page = await missionPage(context);
   await page.getByRole('button', { name: 'Start mission' }).click();
 
-  const frame = page.locator('iframe');
-  await expect(frame).toHaveAttribute('src', /^https:\/\/www\.youtube-nocookie\.com\/embed\/[\w-]{11}\?/);
+  await expect(page.locator('iframe')).toHaveAttribute('src', /youtube-nocookie\.com\/embed\/BCUzHzpJLAI\?.*start=40&end=170/);
   await expect(page.getByText('Follow along.')).toBeVisible();
-  await expect(page.getByText(/video 1 of [23]/)).toBeVisible();
+  await expect(page.getByText('video 1 of 2')).toBeVisible();
+  await expect(page.getByRole('timer')).toHaveText(/^2:(10|0\d)$/);
 
-  // The real player, not an error page (needs the network)
+  // The real player, not an error page, starting at the trim point (needs the network)
   const player = page.frameLocator('iframe');
   await expect(player.locator('video')).toHaveCount(1, { timeout: 20_000 });
   await expect(player.locator('.ytp-error')).toHaveCount(0);
-
-  // Its length replaces the 5 min default
-  await expect
-    .poll(async () => (await engine.send({ type: 'tick' })).break?.awaitingVideoDuration, { timeout: 20_000 })
-    .toBe(false);
-  const b = (await engine.send({ type: 'tick' })).break!;
-  expect(b.durationMs).not.toBe(5 * 60_000);
-  expect(b.durationMs).toBeGreaterThan(60_000);
-  await page.waitForTimeout(1500);
+  await expect.poll(() => player.locator('video').evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 20_000 }).toBeGreaterThan(40);
+  await page.waitForTimeout(1000);
   await shot(page, 'video');
+
+  // No button before the end; touching the computer does not pause anything
+  await expect(page.getByRole('button', { name: "I've done the routine" })).toHaveCount(0);
+  await engine.advance(1);
+  await engine.send({ type: 'idle', state: 'active' });
+  await expect(page.getByRole('timer')).toHaveText(/^1:(10|0\d)$/);
+
+  // When the video's length has passed, the countdown gives way to the button
+  await engine.advance(2);
+  await expect(page.getByRole('timer')).toHaveCount(0);
+  await expect(page.getByText('The video is over.')).toBeVisible();
+  expect((await engine.send({ type: 'tick' })).break?.phase).toBe('mission');
+  await shot(page, 'video-over');
+  await page.getByRole('button', { name: "I've done the routine" }).click();
+  await expect(page.getByRole('heading', { name: 'Recharged.' })).toBeVisible();
 });
 
 test('new tab: a recharge earned while away plays once', async ({ engine, home }) => {
