@@ -30,6 +30,13 @@ Replaces the design's step screens (one step per screen, big pastel tile, 88 px 
 - Step 1 holds the editable timer sentence itself. One button, "Continue". No "Keep these" / "Edit".
 - Headline "Charge your battery." / "Three steps and micro.breaks is ready.", then "All set." with Start moving on the same screen.
 
+## Mission timer and video missions (4 October 2026)
+
+- "Paused" (amber ring, "Step away to continue.") only shows once some time has run and the user came back. Right after Start mission the ring is green and says "Leave the computer.": nothing is paused yet.
+- YouTube refuses embeds without a Referer, and extension pages send none. The extension adds one to its own player frames only (`src/background/youtube.ts`). This needs the `declarativeNetRequestWithHostAccess` permission and access to `www.youtube-nocookie.com`.
+- Until trim points are set, a video mission lasts the full length the player reports.
+- "Back to work" closes the mission tab, so the user lands on what they had before. If it is the only tab, it becomes the new tab.
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.

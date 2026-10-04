@@ -23,9 +23,10 @@ test('a full cycle: heads-up, prompt, mission, recharged', async ({ context, eng
 
   // The mission timer only runs while away
   await mission.getByRole('button', { name: 'Start mission' }).click();
-  await expect(mission.getByText('paused')).toBeVisible();
+  await expect(mission.getByRole('timer')).toBeVisible();
   await engine.send({ type: 'idle', state: 'locked' });
-  state = await engine.advance(5);
+  // Long enough for any mission, a video one included
+  state = await engine.advance(15);
   expect(state.break).toBeNull();
   expect(state.outcome?.kind).toBe('mission');
   expect(await engine.notifications()).toEqual(['mission_done']);

@@ -41,6 +41,8 @@ export interface Break {
   voluntary: boolean;
   openedAt: number;
   videoIndex: number | null;
+  /** The video's own length is not known yet: the player reports it once loaded. */
+  awaitingVideoDuration?: boolean;
   durationMs: number;
   remainingMs: number;
   /** Set while the mission timer runs, i.e. while the user is away. */
@@ -95,6 +97,7 @@ export type Input =
   | { type: 'cancel_break' }
   | { type: 'switch_mission' }
   | { type: 'start_mission'; videoDurationMs?: number }
+  | { type: 'video_duration'; ms: number }
   | { type: 'skip_open' }
   | { type: 'skip_cancel' }
   | { type: 'skip_answer'; value: number }

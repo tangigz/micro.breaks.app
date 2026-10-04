@@ -270,6 +270,7 @@ export function step(prev: State, input: Input, now: number): StepResult {
         const v = m.videos[i]!;
         if (input.videoDurationMs != null) duration = input.videoDurationMs;
         else if (v.end != null) duration = (v.end - (v.start ?? 0)) * 1000;
+        else b.awaitingVideoDuration = true;
       }
       b.phase = 'mission';
       b.durationMs = duration;
@@ -278,6 +279,17 @@ export function step(prev: State, input: Input, now: number): StepResult {
       b.lastActivityAt = now;
       b.skip = null;
       log('mission_started', { missionId: b.missionId, videoIndex: b.videoIndex, durationMs: duration, voluntary: b.voluntary });
+      break;
+    }
+
+    case 'video_duration': {
+      // The mission lasts the video. Time already spent away still counts.
+      if (b?.phase !== 'mission' || !b.awaitingVideoDuration || !(input.ms > 0)) break;
+      const start = (mission(b.missionId).videos?.[b.videoIndex ?? 0]?.start ?? 0) * 1000;
+      const duration = Math.max(0, input.ms - start);
+      b.remainingMs = Math.max(0, b.remainingMs + duration - b.durationMs);
+      b.durationMs = duration;
+      b.awaitingVideoDuration = false;
       break;
     }
 

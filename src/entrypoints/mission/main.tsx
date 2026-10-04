@@ -1,18 +1,29 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { mission, missionView } from '@/engine';
+import { browser } from 'wxt/browser';
+import { missionView } from '@/engine';
 import { send, useEngine } from '@/data/client';
 import { DevBar } from '@/ui/DevBar';
 import { Frame } from '@/ui/Frame';
 import { Header } from '@/ui/Header';
+import { Recharged, rechargedEyebrow } from '@/ui/Recharged';
 import { applySavedTheme, applyTheme } from '@/ui/theme';
 import '@/ui/tokens.css';
 import { Prompt } from './Prompt';
+import { Running } from './Running';
 
 applySavedTheme();
 
 const headline = 'm-0 text-[104px] leading-[100px] font-bold tracking-[-0.045em]';
 const primary = 'h-14 w-fit cursor-pointer rounded-full bg-ink px-9 text-[17px] font-semibold text-on-ink';
+
+/** Back to work: this tab has done its job. Close it, unless it is the only one in the window. */
+async function backToWork(): Promise<void> {
+  await send({ type: 'outcome_seen' });
+  const [tab, all] = await Promise.all([browser.tabs.getCurrent(), browser.tabs.query({ currentWindow: true })]);
+  if (tab?.id != null && all.length > 1) await browser.tabs.remove(tab.id);
+  else location.replace('/newtab.html');
+}
 
 function Mission() {
   const engine = useEngine();
@@ -21,6 +32,7 @@ function Mission() {
   const outcome = engine?.state.outcome;
   // Nothing to show here once the break is over and its outcome has been seen
   const leave = engine != null && !b && !outcome;
+  const done = useCallback(() => void backToWork(), []);
 
   useEffect(() => {
     if (theme) applyTheme(theme);
@@ -33,7 +45,6 @@ function Mission() {
   if (!engine || leave) return null;
   const { state, now } = engine;
   const timer = missionView(state, now);
-  const left = timer ? Math.ceil(timer.remainingMs / 1000) : 0;
   const prompt = b?.phase === 'prompt' && !b.skip;
 
   return (
@@ -55,36 +66,28 @@ function Mission() {
         )}
       </Header>
 
-      {b && prompt ? (
-        <Prompt state={state} b={b} />
-      ) : (
-        // Placeholders until the mission timer and "Recharged." (#7) and the skip challenge (#8) are designed in
+      {b?.skip ? (
+        // Placeholder until the skip challenge (#8) is designed in
         <main className="relative flex w-[1120px] grow flex-col justify-center gap-6 pb-14">
-          {b?.skip ? (
-            <>
-              <h1 className={headline}>Skipping costs more than moving.</h1>
-              <button className={primary} onClick={() => void send({ type: 'skip_cancel' })}>
-                Fine, I'll do the mission
-              </button>
-            </>
-          ) : b ? (
-            <>
-              <h1 className={headline}>{mission(b.missionId).name}</h1>
-              <p className="m-0 text-[22px] leading-[28px] font-semibold text-ink-2">
-                {Math.floor(left / 60)}:{String(left % 60).padStart(2, '0')}
-                {timer?.running ? '' : ' · paused'}
-              </p>
-            </>
-          ) : (
-            <>
-              <h1 className={headline}>{outcome?.kind === 'skipped' ? 'Skipped.' : 'Recharged.'}</h1>
-              <button className={primary} onClick={() => void send({ type: 'outcome_seen' })}>
-                Back to work
-              </button>
-            </>
-          )}
+          <h1 className={headline}>Skipping costs more than moving.</h1>
+          <button className={primary} onClick={() => void send({ type: 'skip_cancel' })}>
+            Fine, I'll do the mission
+          </button>
         </main>
-      )}
+      ) : b && prompt ? (
+        <Prompt state={state} b={b} />
+      ) : b && timer ? (
+        <Running b={b} timer={timer} />
+      ) : outcome?.kind === 'skipped' ? (
+        <main className="relative flex w-[1120px] grow flex-col justify-center gap-6 pb-14">
+          <h1 className={headline}>Skipped.</h1>
+          <button className={primary} onClick={done}>
+            Back to work
+          </button>
+        </main>
+      ) : outcome ? (
+        <Recharged eyebrow={rechargedEyebrow(outcome.kind)} onDone={done} />
+      ) : null}
       <DevBar {...engine} />
     </Frame>
   );

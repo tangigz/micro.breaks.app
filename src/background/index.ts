@@ -7,6 +7,7 @@ import { db } from '@/data/db';
 import { loadState, saveState } from '@/data/store';
 import { clearNotification, notify } from './notifications';
 import { HOME, MISSION, SETUP, show } from './tabs';
+import { allowYouTubeEmbeds } from './youtube';
 
 const TICK = 'tick';
 const WAKE = 'wake';
@@ -93,6 +94,11 @@ async function enforceLock(): Promise<void> {
   }
 }
 
+/** Browser tests send idle changes by hand; the machine's real idle state must not interfere. */
+async function realIdleIgnored(): Promise<boolean> {
+  return (await browser.storage.local.get('testIgnoreIdle')).testIgnoreIdle === true;
+}
+
 /** Test mode: moves the clock forward, ticking every minute on the way like the alarm would. */
 async function advance(ms: number): Promise<State> {
   const end = (await clockNow()) + ms;
@@ -112,9 +118,12 @@ export function start(): void {
   browser.alarms.onAlarm.addListener(() => void dispatch({ type: 'tick' }));
 
   browser.idle.onStateChanged.addListener((idle) => {
-    const state = idle as IdleState;
-    const idleForMs = state === 'idle' && cache ? detectionSeconds(cache) * 1000 : undefined;
-    void dispatch({ type: 'idle', state, idleForMs });
+    void realIdleIgnored().then((ignored) => {
+      if (ignored) return;
+      const state = idle as IdleState;
+      const idleForMs = state === 'idle' && cache ? detectionSeconds(cache) * 1000 : undefined;
+      void dispatch({ type: 'idle', state, idleForMs });
+    });
   });
 
   browser.tabs.onActivated.addListener(() => void enforceLock());
@@ -142,10 +151,13 @@ export function start(): void {
     return true;
   });
 
+  void allowYouTubeEmbeds();
+
   // Every time the service worker wakes: the alarm exists, and the idle state has not changed behind our back
   void (async () => {
     if (!(await browser.alarms.get(TICK))) await browser.alarms.create(TICK, { periodInMinutes: 1 });
     const state = await dispatch({ type: 'tick' });
+    if (await realIdleIgnored()) return;
     const idle = (await browser.idle.queryState(detectionSeconds(state))) as IdleState;
     if (idle !== state.idle) {
       await dispatch({ type: 'idle', state: idle, idleForMs: idle === 'idle' ? detectionSeconds(state) * 1000 : undefined });

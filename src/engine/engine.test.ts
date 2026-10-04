@@ -422,6 +422,22 @@ describe('the break', () => {
     expect(startVideo().videoIndex).toBe(0);
   });
 
+  it('takes the length of an untrimmed video from the player, keeping the time already spent away', () => {
+    const video = MISSIONS.find((m) => m.videos)!;
+    const sim = working();
+    sim.send({ type: 'start_break_now' });
+    sim.state.break!.missionId = video.id;
+    sim.send({ type: 'start_mission' });
+    expect(sim.state.break).toMatchObject({ durationMs: 5 * MIN, awaitingVideoDuration: true });
+    sim.send({ type: 'idle', state: 'locked' });
+    sim.wait(1);
+    sim.send({ type: 'video_duration', ms: 7 * MIN });
+    expect(missionView(sim.state, sim.now)).toMatchObject({ durationMs: 7 * MIN, remainingMs: 6 * MIN });
+    // Reported once: a second report changes nothing
+    sim.send({ type: 'video_duration', ms: 2 * MIN });
+    expect(sim.state.break!.durationMs).toBe(7 * MIN);
+  });
+
   it('"Start a break now" opens the same prompt, free to cancel until the mission starts', () => {
     const sim = working();
     sim.wait(10);

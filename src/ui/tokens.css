@@ -172,3 +172,168 @@ body {
 .tile-float {
   animation: tile-float 2.6s ease-in-out infinite;
 }
+
+/* Recharged: the battery refills, glows, a bolt pops out, the copy rises in */
+@keyframes rc-fill {
+  0% {
+    height: 14%;
+    background-color: #ff8a5b;
+  }
+  45% {
+    background-color: #ffc56b;
+  }
+  100% {
+    height: 100%;
+    background-color: #6fcf7a;
+  }
+}
+@keyframes rc-wave {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes rc-bubble {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-320px);
+    opacity: 0;
+  }
+}
+@keyframes rc-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(111, 207, 122, 0);
+  }
+  40% {
+    box-shadow: 0 0 80px 16px rgba(111, 207, 122, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 40px 0 rgba(111, 207, 122, 0.22);
+  }
+}
+@keyframes rc-ripple {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+@keyframes rc-pop {
+  0% {
+    transform: translateY(60px) scale(0) rotate(-20deg);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-14px) scale(1.2) rotate(8deg);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes rc-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes rc-rise {
+  0% {
+    transform: translateY(28px);
+    opacity: 0;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+@keyframes rc-halo {
+  0% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+}
+@keyframes rc-particle {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0.2);
+    opacity: 0;
+  }
+}
+
+.rc-fill {
+  animation: rc-fill 2.2s cubic-bezier(0.3, 0.7, 0.2, 1) 0.3s both;
+}
+.rc-wave {
+  animation: rc-wave 1.4s linear infinite;
+}
+.rc-bubble {
+  opacity: 0;
+  animation: rc-bubble 2.6s ease-in infinite;
+}
+.rc-glow {
+  animation: rc-glow 1.6s ease-out 2.4s both;
+}
+/* Hidden until they start: only the end state is kept, not the first frame */
+.rc-ripple {
+  opacity: 0;
+  animation: rc-ripple 1.4s ease-out 2.4s forwards;
+}
+.rc-particle {
+  opacity: 0;
+  animation: rc-particle 1.1s ease-out 2.45s forwards;
+}
+.rc-pop {
+  animation: rc-pop 0.8s cubic-bezier(0.2, 0.8, 0.2, 1.2) 2.4s both;
+}
+.rc-float {
+  animation: rc-float 3s ease-in-out 3.2s infinite;
+}
+.rc-rise {
+  animation: rc-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 2.5s both;
+}
+.rc-halo {
+  animation: rc-halo 2.4s ease-out 0.3s both;
+}
+
+@keyframes mission-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(3deg);
+  }
+}
+.mission-float {
+  animation: mission-float 2.4s ease-in-out infinite;
+}
