@@ -61,8 +61,9 @@ Replaces the design's step screens (one step per screen, big pastel tile, 88 px 
 
 - **No accounts.** Each install gets a random ID. The welcome screen asks for an email, required to start, which is attached to that ID so the author can tell testers apart.
 - **Usage events go to PostHog** through its HTTP API, from the background (`src/background/analytics.ts`). No SDK. Events are queued in storage and sent in batches, so nothing is lost offline. Nothing is sent from dev builds or while `POSTHOG_KEY` in `src/config.ts` is empty.
-- **What is sent:** every event the engine logs (same names as the local event log), plus `installed`, `setup_started`, `setup_step_done`, `setup_completed`, `calendar_connected`, `calendar_disconnected`. Theme changes are left out. Never tabs, URLs or calendar content.
-- **New event `seated_streak_ended`** (`seatedMin`, `endedBy`): logged whenever the seated timer restarts or stops. A skip does not end a streak. This is what the "longest seated streak ≤ 60 min" goal is read from.
+- **What is sent, a shortlist of eight events:** `extension_installed`, `setup_step_done`, `setup_completed`, `mission_started`, `mission_completed`, `skip_challenge_shown`, `skip_passed`, `setting_changed` (theme changes left out). Each carries the extension version. Everything else the engine logs stays in the local event log. Never tabs, URLs or calendar content.
+- `seated_streak_ended` (`seatedMin`, `endedBy`) is logged locally whenever the seated timer restarts or stops, but is **not** on the shortlist. The "longest seated streak ≤ 60 min" goal can't be read from PostHog; neither can prompts that were ignored or walked away from.
+- The PostHog project is in the EU region.
 - The welcome screen and the README both say what is shared.
 
 ## Smaller rules, agreed as defaults

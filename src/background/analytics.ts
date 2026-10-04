@@ -6,6 +6,18 @@ import { POSTHOG_HOST, POSTHOG_KEY } from '@/config';
  * remote scripts. Only what micro.breaks itself does is sent: never tabs, URLs or calendar content.
  */
 
+/** The shortlist. Anything else the app logs stays in the local event log only. */
+const SENT = new Set([
+  'extension_installed',
+  'setup_step_done',
+  'setup_completed',
+  'mission_started',
+  'mission_completed',
+  'skip_challenge_shown',
+  'skip_passed',
+  'setting_changed',
+]);
+
 const QUEUE_KEY = 'analyticsQueue';
 const TESTER_KEY = 'tester';
 /** Browser tests: events stay in the queue, where the tests read them. Nothing is sent. */
@@ -77,6 +89,7 @@ async function flush(): Promise<void> {
 
 /** Records one event. `at` is the extension's own clock, so test-mode time travel is kept. */
 export function track(event: string, properties: Record<string, unknown> = {}, at: number = Date.now()): void {
+  if (!SENT.has(event)) return;
   queue = queue.then(() => add(event, properties, at)).catch((error) => console.error('[micro.breaks] analytics', error));
   clearTimeout(timer);
   timer = setTimeout(() => flushSoon(), FLUSH_DELAY_MS);

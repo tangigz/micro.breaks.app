@@ -254,10 +254,7 @@ function Setup() {
                 void browser.storage.local
                   .get('tester')
                   .then(({ tester }) => browser.storage.local.set({ tester: { ...(tester as object), email: email.trim().toLowerCase() } }))
-                  .then(() => {
-                    track('setup_started');
-                    setProgress({ ...p, started: true });
-                  });
+                  .then(() => setProgress({ ...p, started: true }));
               }}
             >
               <label htmlFor="tester-email" className="text-[15px] leading-5 font-semibold">

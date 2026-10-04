@@ -77,14 +77,12 @@ test('one screen: the battery fills as the three steps are completed', async ({ 
   // What would go to PostHog: the setup funnel, under one install id, with the email attached
   const tracked = await engine.tracked();
   expect(tracked.map((e) => e.event)).toEqual([
-    'installed',
-    'setup_started',
+    'extension_installed',
     'setting_changed',
     'setup_step_done',
     'setup_step_done',
     'setup_step_done',
     'setup_completed',
-    'day_start',
   ]);
   expect(new Set(tracked.map((e) => e.distinct_id)).size).toBe(1);
   expect(tracked[0]!.distinct_id).toMatch(/^[0-9a-f-]{36}$/);

@@ -55,7 +55,7 @@ When a new version is announced: download the new zip, replace the contents of y
 
 micro.breaks is in a test phase, so it shares how you use it with its author, Tangi, to learn whether it works:
 
-- **Shared:** the email you give on the welcome screen, and what happens inside micro.breaks: setup steps, breaks shown, started, completed or skipped, time spent seated between breaks, and your timer settings. These go to [PostHog](https://posthog.com), an analytics service.
+- **Shared:** the email you give on the welcome screen, and a few things that happen inside micro.breaks: installing it, finishing the setup steps, missions started and completed, skip challenges opened and passed, and changes to your timer settings. These go to [PostHog](https://posthog.com), an analytics service hosted in the EU.
 - **Never shared:** the sites you visit, your tabs, anything you type outside micro.breaks, and your calendar. If you connect Google Calendar, your busy times are read on your computer and stay there.
 - Video missions play from YouTube.
 

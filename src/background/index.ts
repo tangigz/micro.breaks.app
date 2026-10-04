@@ -136,7 +136,6 @@ async function setCalendar(connect: boolean): Promise<string | undefined> {
   } else {
     await disconnectCalendar();
   }
-  track(connect ? 'calendar_connected' : 'calendar_disconnected', {}, now);
   await dispatch({ type: 'settings', patch: { calendar: connect } });
   await dispatch({ type: 'tick' });
 }
@@ -158,7 +157,7 @@ async function advance(ms: number): Promise<State> {
 export function start(): void {
   browser.runtime.onInstalled.addListener(({ reason }) => {
     if (reason !== 'install') return;
-    track('installed');
+    track('extension_installed');
     void show(SETUP);
   });
 

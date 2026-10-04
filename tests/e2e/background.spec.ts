@@ -43,10 +43,9 @@ test('a full cycle: heads-up, prompt, mission, recharged', async ({ context, eng
     'seated_streak_ended',
   ]);
 
-  // The same events are queued for PostHog, with what the charts need
+  // Only the shortlist is queued for PostHog; the rest stays in the local log
   const tracked = await engine.tracked();
-  expect(tracked.find((e) => e.event === 'prompt_shown')!.properties).toMatchObject({ seatedMin: 60 });
-  expect(tracked.find((e) => e.event === 'seated_streak_ended')!.properties).toMatchObject({ endedBy: 'mission' });
+  expect(tracked.map((e) => e.event)).toEqual(['extension_installed', 'setting_changed', 'mission_started', 'mission_completed']);
   expect(tracked.every((e) => typeof e.properties.version === 'string')).toBe(true);
 });
 
