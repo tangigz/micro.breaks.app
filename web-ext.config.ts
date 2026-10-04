@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { mkdirSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { chromium } from '@playwright/test';
 import { defineWebExtConfig } from 'wxt';
 
@@ -9,19 +9,12 @@ import { defineWebExtConfig } from 'wxt';
  * kept in .dev-profile, so settings and state survive between runs.
  */
 const profile = resolve('.dev-profile');
-mkdirSync(join(profile, 'Default'), { recursive: true });
-
-// Chrome keeps unpacked extensions disabled unless Developer mode is on, and the launcher
-// only sets it on a brand-new profile. Set it on every start.
-const preferences = join(profile, 'Default', 'Preferences');
-const prefs = existsSync(preferences) ? JSON.parse(readFileSync(preferences, 'utf8')) : {};
-prefs.extensions = { ...prefs.extensions, ui: { ...prefs.extensions?.ui, developer_mode: true } };
-writeFileSync(preferences, JSON.stringify(prefs));
+mkdirSync(profile, { recursive: true });
 
 export default defineWebExtConfig({
   binaries: { chrome: chromium.executablePath() },
   chromiumProfile: profile,
   keepProfileChanges: true,
-  // Lets Playwright attach to the running test browser: chromium.connectOverCDP('http://localhost:9333')
+  // Lets scripts/dev.mjs and scripts/check-test-browser.mjs attach to the running test browser
   chromiumArgs: ['--remote-debugging-port=9333'],
 });
