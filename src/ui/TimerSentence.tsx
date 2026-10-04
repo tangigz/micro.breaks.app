@@ -54,8 +54,8 @@ const SIZES = {
     cell: 'h-14 rounded-[14px]',
     values: ['text-[28px] font-bold', 'text-[22px] font-medium', 'text-[18px] font-medium'],
     hint: 'text-center',
-    icon: 'size-9',
-    meet: 'mt-2',
+    card: 'w-[880px] rounded-panel bg-raised px-6 py-5',
+    cardIcon: 'size-14',
   },
   /** Inside a setup step: left-aligned, in a 570 px column. */
   small: {
@@ -67,16 +67,14 @@ const SIZES = {
     cell: 'h-11 rounded-xl',
     values: ['text-[18px] font-bold', 'text-[15px] font-medium', 'text-[13px] font-medium'],
     hint: '',
-    icon: 'size-6',
-    meet: 'mt-[5px]',
+    card: 'w-full rounded-[20px] bg-band px-4 py-3.5',
+    cardIcon: 'size-10',
   },
 };
 
 /** The movement timer as one sentence. Every highlighted word opens a tray of values under it. */
 export function TimerSentence({ settings: saved, size = 'large' }: { settings: Settings; size?: keyof typeof SIZES }) {
   const [edit, setEdit] = useState<Field | null>(null);
-  /** The calendar tray, under the same sentence. */
-  const [meetings, setMeetings] = useState(false);
   const [calendarError, setCalendarError] = useState<string>();
   const [busy, setBusy] = useState(false);
   // What was just picked shows at once, without waiting for the background to answer
@@ -116,16 +114,12 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
       aria-label={`${LABELS[field]}, ${show(field, settings[field])}`}
       aria-expanded={edit === field}
       className={`cursor-pointer ${look.token} ${edit === field ? 'bg-ink text-on-ink' : 'bg-pill text-ink'}`}
-      onClick={() => {
-        setMeetings(false);
-        setEdit(edit === field ? null : field);
-      }}
+      onClick={() => setEdit(edit === field ? null : field)}
     >
       {show(field, settings[field])}
     </button>
   );
   const days = settings.days === 'every' ? 'every day' : 'on weekdays';
-  const meetLabel = saved.calendar ? 'my Google meetings' : 'meetings';
   const toggleCalendar = async (connect: boolean) => {
     setBusy(true);
     setCalendarError(await setCalendar(connect));
@@ -143,19 +137,8 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
         >
           {days}
         </button>
-        . Not during lunch, from {token('lunchStart')} to {token('lunchEnd')}, or during{' '}
-        <button
-          aria-label={`Meetings, ${meetLabel}`}
-          aria-expanded={meetings}
-          className={`inline-flex cursor-pointer items-center gap-2 align-top ${look.token} ${look.meet} ${meetings ? 'bg-ink text-on-ink' : 'bg-pill text-ink'}`}
-          onClick={() => {
-            setEdit(null);
-            setMeetings(!meetings);
-          }}
-        >
-          <img src={calendar} alt="" className={look.icon} />
-          {meetLabel}
-        </button>
+        . Not during lunch, from {token('lunchStart')} to {token('lunchEnd')}
+        {saved.calendar && <>, or during <span className="text-ink">my Google meetings</span></>}
         .
       </p>
 
@@ -206,61 +189,53 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
               </button>
             </div>
           </section>
-        ) : meetings ? (
-          // Calendar: Google Calendar only
-          <section aria-label="Calendar" className={`flex flex-wrap items-center border border-line bg-raised ${look.tray} ${size === 'large' ? 'p-6' : ''}`}>
-            <div className="flex w-full items-center gap-4">
-              <img src={calendar} alt="" className="size-14 shrink-0" />
-              <div className="flex min-w-0 grow flex-col gap-0.5">
-                <span className="text-[17px] leading-6 font-semibold">Skip my meetings</span>
-                <span className="text-[15px] leading-5 text-ink-2">
-                  {saved.calendar
-                    ? 'No prompts while you are in a meeting.'
-                    : 'Connect Google Calendar so prompts wait until your meeting ends. Read-only, busy times only.'}
-                </span>
-              </div>
-              {saved.calendar ? (
-                <>
-                  <span className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-pos-bg px-4 text-[15px] font-semibold whitespace-nowrap text-pos">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M20 6 9 17l-5-5" />
-                    </svg>
-                    Connected
-                  </span>
-                  <button
-                    disabled={busy}
-                    className="h-11 shrink-0 cursor-pointer px-1 text-[15px] text-ink-2 underline underline-offset-[3px]"
-                    onClick={() => void toggleCalendar(false)}
-                  >
-                    Disconnect
-                  </button>
-                </>
-              ) : (
-                <button
-                  disabled={busy}
-                  className="h-12 shrink-0 cursor-pointer rounded-full bg-ink px-6 text-[15px] font-semibold whitespace-nowrap text-on-ink"
-                  onClick={() => void toggleCalendar(true)}
-                >
-                  Connect Google Calendar
-                </button>
-              )}
-              <button
-                className="h-12 shrink-0 cursor-pointer rounded-full bg-pill px-5 text-[15px] font-medium text-ink"
-                onClick={() => setMeetings(false)}
-              >
-                Close
-              </button>
-            </div>
-            {calendarError && (
-              <div role="alert" className="mt-3 w-full text-[15px] leading-5 text-att">
-                {calendarError}
-              </div>
-            )}
-          </section>
         ) : (
           <div className={`text-[15px] leading-5 text-ink-2 ${look.hint}`}>Click any highlighted word to change it.</div>
         )}
       </div>
+
+      {/* Meetings: always visible, so connecting the calendar is not hidden behind a word */}
+      <section aria-label="Meetings" className={`flex flex-col gap-3 border border-line ${look.card}`}>
+        <div className="flex items-center gap-4">
+          <img src={calendar} alt="" className={`shrink-0 ${look.cardIcon}`} />
+          <div className="flex min-w-0 grow flex-col gap-0.5 text-left">
+            <span className="text-[17px] leading-6 font-semibold text-ink">Skip my meetings</span>
+            <span className="text-[15px] leading-5 text-ink-2">
+              {saved.calendar ? 'No prompts while you are in a meeting.' : 'Prompts wait until your meeting ends. Read-only, busy times only.'}
+            </span>
+          </div>
+          {saved.calendar ? (
+            <>
+              <span className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-pos-bg px-4 text-[15px] font-semibold whitespace-nowrap text-pos">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                Connected
+              </span>
+              <button
+                disabled={busy}
+                className="h-11 shrink-0 cursor-pointer px-1 text-[15px] text-ink-2 underline underline-offset-[3px]"
+                onClick={() => void toggleCalendar(false)}
+              >
+                Disconnect
+              </button>
+            </>
+          ) : (
+            <button
+              disabled={busy}
+              className="h-12 shrink-0 cursor-pointer rounded-full bg-pill px-5 text-[15px] font-semibold whitespace-nowrap text-ink"
+              onClick={() => void toggleCalendar(true)}
+            >
+              Connect Google Calendar
+            </button>
+          )}
+        </div>
+        {calendarError && (
+          <div role="alert" className="text-left text-[15px] leading-5 text-att">
+            {calendarError}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

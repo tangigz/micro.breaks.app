@@ -51,6 +51,12 @@ Replaces the design's step screens (one step per screen, big pastel tile, 88 px 
 - Busy blocks for the next 12 hours are fetched every 5 min and kept, so a meeting that starts between two polls is still known. Each tick derives "in a meeting until" from them. Back-to-back and overlapping meetings count as one.
 - The OAuth client (type "Chrome extension", Google Cloud project in testing mode) is set in `GOOGLE_CLIENT_ID` in `wxt.config.ts`. Only Google accounts listed as test users can connect.
 
+## After the first real install (4 October 2026)
+
+- **Connecting the calendar is a visible card**, "Skip my meetings", always shown under the timer sentence, in the setup step and on the movement timer screen. It replaces the "meetings" word in the sentence, which did not look clickable. Once connected, the sentence ends "…or during my Google meetings."
+- **The timer chip stays on "Done for today." and "Weekend."**, so the settings are always one click away. The design hid it there.
+- The build your own Chrome runs is a copy in `~/Developer/micro.breaks-extension`, refreshed on request, so work in the project does not change it.
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.

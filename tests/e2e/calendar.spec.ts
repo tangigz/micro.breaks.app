@@ -7,18 +7,19 @@ const at = (h: number, m = 0) => new Date(2030, 0, 7, h, m).getTime();
 const fakeCalendar = (page: Page, busy: [number, number][]) =>
   page.evaluate((b) => chrome.storage.local.set({ testCalendar: b }), busy);
 
-test('the meetings tray explains what connecting does', async ({ engine, home }) => {
+test('the meetings card is always visible and says what connecting does', async ({ engine, home }) => {
   await engine.setClock(2030, 1, 7, 10);
   await engine.begin();
   await home.goto(home.url().replace('newtab.html', 'settings.html'));
-  await home.getByRole('button', { name: 'Meetings, meetings' }).click();
-  await expect(home.getByText('Skip my meetings')).toBeVisible();
-  await expect(home.getByText('Connect Google Calendar so prompts wait until your meeting ends. Read-only, busy times only.')).toBeVisible();
-  await expect(home.getByRole('button', { name: 'Connect Google Calendar' })).toBeVisible();
-  await home.screenshot({ path: 'test-results/calendar/tray.png' });
+  const card = home.getByRole('region', { name: 'Meetings' });
+  await expect(card.getByText('Skip my meetings')).toBeVisible();
+  await expect(card.getByText('Prompts wait until your meeting ends. Read-only, busy times only.')).toBeVisible();
+  await expect(card.getByRole('button', { name: 'Connect Google Calendar' })).toBeVisible();
+  // It stays there while a value is being picked
+  await home.getByRole('button', { name: 'Interval, 60 min' }).click();
+  await expect(card).toBeVisible();
+  await home.screenshot({ path: 'test-results/calendar/card.png' });
   // The real sign-in is not exercised here: this browser has no Google account
-  await home.getByRole('button', { name: 'Close' }).click();
-  await expect(home.getByText('Click any highlighted word to change it.')).toBeVisible();
 });
 
 test('connected: the meeting pill, a held prompt, then the prompt when the meeting ends', async ({ context, engine, home }) => {
@@ -31,11 +32,10 @@ test('connected: the meeting pill, a held prompt, then the prompt when the meeti
   ]);
 
   await home.goto(home.url().replace('newtab.html', 'settings.html'));
-  await home.getByRole('button', { name: 'Meetings, meetings' }).click();
   await home.getByRole('button', { name: 'Connect Google Calendar' }).click();
   await expect(home.getByText('Connected', { exact: true })).toBeVisible();
   await expect(home.getByText('No prompts while you are in a meeting.')).toBeVisible();
-  await expect(home.getByRole('button', { name: 'Meetings, my Google meetings' })).toBeVisible();
+  await expect(home.getByText('or during my Google meetings')).toBeVisible();
   await home.screenshot({ path: 'test-results/calendar/connected.png' });
   expect((await engine.send({ type: 'tick' })).settings.calendar).toBe(true);
   await home.getByRole('link', { name: 'Back' }).click();
@@ -67,7 +67,6 @@ test('disconnecting stops holding prompts', async ({ engine, home }) => {
   await engine.begin();
   await fakeCalendar(home, [[at(10), at(12)]]);
   await home.goto(home.url().replace('newtab.html', 'settings.html'));
-  await home.getByRole('button', { name: 'Meetings, meetings' }).click();
   await home.getByRole('button', { name: 'Connect Google Calendar' }).click();
   await expect(home.getByText('Connected', { exact: true })).toBeVisible();
   expect((await engine.send({ type: 'tick' })).meetingUntil).toBe(at(12));
