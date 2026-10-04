@@ -10,10 +10,15 @@ async function focusWindow(windowId: number | undefined): Promise<void> {
   await browser.windows.update(windowId, { focused: true, drawAttention: true });
 }
 
-/** Brings one of our pages to the front: its existing tab if there is one, a new tab otherwise. */
-export async function show(path: typeof HOME | typeof MISSION | typeof SETUP): Promise<void> {
+type Path = typeof HOME | typeof MISSION | typeof SETUP;
+
+async function open(path: Path): Promise<void> {
   const url = browser.runtime.getURL(path);
-  const [existing] = await browser.tabs.query({ url });
+  // A tab that is still loading only has a pendingUrl, which tabs.query({ url }) does not match
+  const ours = (await browser.tabs.query({})).filter((t) => (t.pendingUrl ?? t.url) === url);
+  const [existing, ...extra] = ours;
+  // Never two of the same page: two mission tabs would play the video twice
+  for (const tab of extra) if (tab.id != null) await browser.tabs.remove(tab.id);
   if (existing?.id != null) {
     await browser.tabs.update(existing.id, { active: true });
     return focusWindow(existing.windowId);
@@ -30,4 +35,16 @@ export async function show(path: typeof HOME | typeof MISSION | typeof SETUP): P
   }
   const tab = await browser.tabs.create({ url, active: true });
   return focusWindow(tab.windowId);
+}
+
+let queue: Promise<unknown> = Promise.resolve();
+
+/**
+ * Brings one of our pages to the front: its existing tab if there is one, a new tab otherwise.
+ * One call at a time: the prompt and the lock both ask for the mission tab at the same moment.
+ */
+export function show(path: Path): Promise<void> {
+  const result = queue.then(() => open(path));
+  queue = result.catch(() => {});
+  return result;
 }

@@ -68,7 +68,8 @@ test('video mission: plays the trimmed video on the clock, then asks to confirm'
 
   await expect(page.locator('iframe')).toHaveAttribute('src', /youtube-nocookie\.com\/embed\/BCUzHzpJLAI\?.*start=40&end=170/);
   await expect(page.getByText('Follow along.')).toBeVisible();
-  await expect(page.getByText('video 1 of 2')).toBeVisible();
+  await expect(page.getByText(/video \d of/)).toHaveCount(0);
+  await expect(page.locator('iframe')).toHaveAttribute('src', /controls=0/);
   await expect(page.getByRole('timer')).toHaveText(/^2:(10|0\d)$/);
 
   // The real player, not an error page, starting at the trim point (needs the network)

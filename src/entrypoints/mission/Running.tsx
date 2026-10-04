@@ -168,7 +168,8 @@ function Video({ b, timer }: { b: Break; timer: MissionView }) {
 
   const over = !b.awaitingVideoDuration && timer.remainingMs <= 0;
 
-  const params = new URLSearchParams({ autoplay: '1', rel: '0', playsinline: '1', enablejsapi: '1' });
+  // No YouTube controls: its own time display shows the untrimmed length, and ours is the countdown below
+  const params = new URLSearchParams({ autoplay: '1', controls: '0', disablekb: '1', fs: '0', rel: '0', iv_load_policy: '3', playsinline: '1', enablejsapi: '1' });
   if (video.start != null) params.set('start', String(video.start));
   if (video.end != null) params.set('end', String(video.end));
 
@@ -176,10 +177,9 @@ function Video({ b, timer }: { b: Break; timer: MissionView }) {
     <main className="relative flex w-[1040px] grow flex-col justify-center gap-6 pb-8">
       <iframe
         ref={frame}
-        title={`${m.name}, video ${b.videoIndex! + 1} of ${videos.length}`}
+        title={`${m.name}, video`}
         src={`https://www.youtube-nocookie.com/embed/${video.id}?${params}`}
-        allow="autoplay; encrypted-media; picture-in-picture"
-        allowFullScreen
+        allow="autoplay; encrypted-media"
         referrerPolicy="strict-origin-when-cross-origin"
         className="h-[585px] w-[1040px] rounded-panel border border-line bg-[#141416]"
       />
@@ -207,7 +207,7 @@ function Video({ b, timer }: { b: Break; timer: MissionView }) {
         )}
         <div className="flex grow flex-col gap-1">
           <div className="text-[28px] leading-[34px] font-bold tracking-[-0.015em]">
-            {m.name} <span className="text-ink-2">· video {b.videoIndex! + 1} of {videos.length}</span>
+            {m.name}
           </div>
           <div className="text-[17px] leading-6 text-ink-2">
             {over ? (

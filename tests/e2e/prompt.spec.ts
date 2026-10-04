@@ -71,6 +71,9 @@ test('"Start a break now" opens the prompt with a free way out', async ({ contex
   await engine.begin();
   await home.getByRole('button', { name: 'Start a break now' }).click();
   const page = await missionPage(context);
+  // One mission tab, even though the prompt and the lock both ask for it at once
+  await page.waitForTimeout(800);
+  expect(context.pages().filter((p) => p.url().endsWith('/mission.html'))).toHaveLength(1);
   await expect(page.getByRole('button', { name: "Skip (it'll cost you)" })).toHaveCount(0);
   await page.getByRole('button', { name: 'Not now' }).click();
   await expect(page).toHaveURL(/newtab\.html$/);
