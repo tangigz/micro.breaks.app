@@ -131,11 +131,13 @@ function Info({ state, now, view }: { state: State; now: number; view: NewTabVie
 function Actions({ state, view }: { state: State; view: NewTabView }) {
   const { settings } = state;
   const { mode } = view;
-  if (mode === 'done' || mode === 'weekend' || mode === 'setup') return null;
+  if (mode === 'setup') return null;
+  // Outside working hours there is no break to start, but the timer stays one click away
+  const off = mode === 'done' || mode === 'weekend' || mode === 'before' || mode === 'lunch';
   const hours = `${timeOfDay(settings.dayStart)}–${timeOfDay(settings.dayEnd)}`;
   return (
     <div className="flex items-center gap-3">
-      {mode !== 'before' && mode !== 'lunch' && (
+      {!off && (
         <button
           className="inline-flex h-[52px] cursor-pointer items-center gap-2.5 rounded-full bg-ink px-[26px] text-[15px] font-semibold text-on-ink"
           onClick={() => void send({ type: 'start_break_now' })}

@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
 import brain from '@/assets/emoji/brain.png';
 import biceps from '@/assets/emoji/flexed-biceps.png';
 import voltage from '@/assets/emoji/high-voltage.png';
-import { send, useEngine } from '@/data/client';
+import { send, setCalendar, useEngine } from '@/data/client';
 import { useStored } from '@/data/stored';
 import type { Settings } from '@/engine';
 import { Battery, Halo } from '@/ui/Battery';
@@ -60,7 +60,7 @@ async function sendTest(): Promise<void> {
 
 function Pill({ action, primary, large }: { action: Action; primary?: boolean; large?: boolean }) {
   const look = primary ? 'bg-ink text-on-ink' : 'bg-pill text-ink';
-  const size = large ? 'h-14 px-9 text-[17px]' : 'h-12 px-6 text-[15px]';
+  const size = large ? (primary ? 'h-14 px-9 text-[17px]' : 'h-14 px-6 text-[15px]') : 'h-12 px-6 text-[15px]';
   const className = `inline-flex cursor-pointer items-center rounded-full font-semibold whitespace-nowrap no-underline ${look} ${size}`;
   return 'href' in action ? (
     <a href={action.href} className={className}>
@@ -99,6 +99,7 @@ function Setup() {
   const engine = useEngine();
   const [progress, setProgress] = useStored<Progress>('setup', START);
   const [view, setView] = useStored<number | null>('setupView', null);
+  const [calendarError, setCalendarError] = useState<string>();
   const theme = engine?.state.settings.theme;
 
   useEffect(() => {
@@ -248,7 +249,11 @@ function Setup() {
                 {all ? 'All set.' : 'Charge your battery.'}
               </h1>
               <div className="text-[22px] leading-[30px] font-semibold tracking-[-0.01em] text-ink-2">
-                {all ? "It runs on its own whenever you're working." : 'Three steps and micro.breaks is ready.'}
+                {!all
+                  ? 'Three steps and micro.breaks is ready.'
+                  : state.settings.calendar
+                    ? "It runs on its own whenever you're working. No prompts during your meetings."
+                    : "It runs on its own whenever you're working. Optional: connect Google Calendar so prompts wait for your meetings to end."}
               </div>
             </div>
 
@@ -302,12 +307,29 @@ function Setup() {
             </ol>
 
             {all && (
-              <div>
-                <Pill
-                  primary
-                  large
-                  action={state.setupDone ? { label: 'Back to micro.breaks', href: '/newtab.html' } : { label: 'Start moving', run: () => void start() }}
-                />
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <Pill
+                    primary
+                    large
+                    action={state.setupDone ? { label: 'Back to micro.breaks', href: '/newtab.html' } : { label: 'Start moving', run: () => void start() }}
+                  />
+                  {state.settings.calendar ? (
+                    <span className="inline-flex h-14 items-center gap-2 rounded-full bg-pos-bg px-[22px] text-[15px] font-semibold whitespace-nowrap text-pos">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      Google Calendar connected
+                    </span>
+                  ) : (
+                    <Pill large action={{ label: 'Connect Google Calendar', run: () => void setCalendar(true).then(setCalendarError) }} />
+                  )}
+                </div>
+                {calendarError && (
+                  <div role="alert" className="text-[15px] leading-5 text-att">
+                    {calendarError}
+                  </div>
+                )}
               </div>
             )}
           </div>

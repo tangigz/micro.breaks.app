@@ -62,7 +62,9 @@ test('done for today', async ({ engine, home }) => {
   await expect(home.getByRole('heading', { name: 'Done for today.' })).toBeVisible();
   await expect(home.getByText('Monday · 18:00')).toBeVisible();
   await expect(home.getByText('See you tomorrow.')).toBeVisible();
-  await expect(home.getByText('Every 60 min')).toHaveCount(0);
+  // No break to start, but the movement timer stays reachable
+  await expect(home.getByRole('button', { name: 'Start a break now' })).toHaveCount(0);
+  await expect(home.getByRole('link', { name: /Edit your movement timer/ })).toBeVisible();
   await shot(home, 'done');
 });
 
@@ -72,13 +74,24 @@ test('weekend', async ({ engine, home }) => {
   await engine.begin();
   await expect(home.getByRole('heading', { name: 'Weekend.' })).toBeVisible();
   await expect(home.getByText('See you Monday at 9:00.')).toBeVisible();
+  // Not a dead end: the timer chip leads back to the settings, e.g. to switch to every day
+  await home.getByRole('link', { name: /Edit your movement timer/ }).click();
+  await home.getByRole('button', { name: 'Days, on weekdays. Switch' }).click();
+  await home.getByRole('link', { name: 'Back' }).click();
+  await expect(home.getByText('Next break in')).toBeVisible();
+  await home.goBack();
+  await home.getByRole('button', { name: 'Days, every day. Switch' }).click();
+  await home.getByRole('link', { name: 'Back' }).click();
+  await expect(home.getByRole('heading', { name: 'Weekend.' })).toBeVisible();
   await shot(home, 'weekend');
 });
 
 test('meeting: the pill, then a held prompt', async ({ engine, home }) => {
   await engine.setClock(...MONDAY, 10);
   const state = await engine.begin();
-  await engine.send({ type: 'calendar', busyUntil: state.seatedSince! + 90 * 60_000 });
+  // What a connected calendar leaves in storage: one meeting, from now until 11:30
+  await home.evaluate((busy) => chrome.storage.local.set({ calendarBusy: busy }), [[state.seatedSince!, state.seatedSince! + 90 * 60_000]]);
+  await engine.send({ type: 'settings', patch: { calendar: true } });
   await engine.advance(18);
   await expect(home.getByRole('status')).toHaveText('In a meeting until 11:30. Prompts wait.');
   await shot(home, 'meeting');
