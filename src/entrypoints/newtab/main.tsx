@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { createRoot } from 'react-dom/client';
 import { browser } from 'wxt/browser';
 import { send, useEngine } from '@/data/client';
 import { DevBar } from '@/ui/DevBar';
@@ -7,6 +6,7 @@ import { Frame } from '@/ui/Frame';
 import { Header } from '@/ui/Header';
 import { Recharged, rechargedEyebrow } from '@/ui/Recharged';
 import { applySavedTheme, applyTheme } from '@/ui/theme';
+import { mount } from '@/ui/mount';
 import '@/ui/tokens.css';
 import { HealthLine, NewTab } from './NewTab';
 
@@ -57,4 +57,4 @@ function App() {
   );
 }
 
-createRoot(document.getElementById('root')!).render(<App />);
+mount(<App />);

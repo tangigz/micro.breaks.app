@@ -391,7 +391,7 @@ export function step(prev: State, input: Input, now: number): StepResult {
 
 /** Time left on a video mission: its length, counted from Start mission. */
 export function videoTimeLeft(b: Break, now: number): number {
-  return Math.max(0, b.durationMs - (now - (b.startedAt ?? now)));
+  return Math.max(0, b.durationMs - (now - (b.startedAt ?? b.openedAt)));
 }
 
 /** Chrome is locked onto the mission tab from the prompt until the mission is completed or skipped. */

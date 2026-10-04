@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import { useEngine } from '@/data/client';
 import { DevBar } from '@/ui/DevBar';
 import { Frame } from '@/ui/Frame';
 import { Header } from '@/ui/Header';
 import { TimerSentence } from '@/ui/TimerSentence';
 import { applySavedTheme, applyTheme } from '@/ui/theme';
+import { mount } from '@/ui/mount';
 import '@/ui/tokens.css';
 
 applySavedTheme();
@@ -33,4 +33,4 @@ function MovementTimer() {
   );
 }
 
-createRoot(document.getElementById('root')!).render(<MovementTimer />);
+mount(<MovementTimer />);

@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import { browser } from 'wxt/browser';
 import brain from '@/assets/emoji/brain.png';
 import biceps from '@/assets/emoji/flexed-biceps.png';
@@ -14,6 +13,7 @@ import { timeOfDay } from '@/ui/format';
 import { Header } from '@/ui/Header';
 import { TimerSentence } from '@/ui/TimerSentence';
 import { applySavedTheme, applyTheme } from '@/ui/theme';
+import { mount } from '@/ui/mount';
 import '@/ui/tokens.css';
 
 applySavedTheme();
@@ -318,4 +318,4 @@ function Setup() {
   );
 }
 
-createRoot(document.getElementById('root')!).render(<Setup />);
+mount(<Setup />);

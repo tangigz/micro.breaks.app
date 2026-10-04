@@ -157,6 +157,8 @@ export function start(): void {
   void (async () => {
     if (!(await browser.alarms.get(TICK))) await browser.alarms.create(TICK, { periodInMinutes: 1 });
     const state = await dispatch({ type: 'tick' });
+    // A break is still open (the extension was reloaded or updated mid-break): bring its tab back
+    if (isLocked(state)) void enforceLock();
     if (await realIdleIgnored()) return;
     const idle = (await browser.idle.queryState(detectionSeconds(state))) as IdleState;
     if (idle !== state.idle) {
