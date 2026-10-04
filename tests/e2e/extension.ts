@@ -21,6 +21,8 @@ interface Fixtures {
     begin(): Promise<State>;
     notifications(): Promise<string[]>;
     events(): Promise<string[]>;
+    /** The usage events queued for PostHog. */
+    tracked(): Promise<{ event: string; distinct_id: string; properties: Record<string, unknown> }[]>;
   };
 }
 
@@ -43,7 +45,8 @@ export const test = base.extend<Fixtures>({
     await page.goto(`chrome-extension://${extensionId}/newtab.html`);
     await page.waitForURL(/setup\.html$/);
     // Idle changes are sent by the tests; the real state of this machine must not interfere
-    await page.evaluate(() => chrome.storage.local.set({ testIgnoreIdle: true }));
+    // Usage events are kept in the queue for the tests to read, and never sent
+    await page.evaluate(() => chrome.storage.local.set({ testIgnoreIdle: true, testAnalytics: true }));
     await use(page);
   },
   engine: async ({ home }, use) => {
@@ -71,6 +74,11 @@ export const test = base.extend<Fixtures>({
       advance: (min) => message({ mb: 'dev_advance', ms: min * 60_000 }),
       notifications: () =>
         home.evaluate(() => new Promise<string[]>((r) => chrome.notifications.getAll((all) => r(Object.keys(all))))),
+      tracked: async () => {
+        // Events are queued a moment after they happen
+        await home.waitForTimeout(300);
+        return home.evaluate(async () => ((await chrome.storage.local.get('analyticsQueue')).analyticsQueue ?? []) as never);
+      },
       events: () =>
         home.evaluate(
           () =>

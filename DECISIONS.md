@@ -57,6 +57,14 @@ Replaces the design's step screens (one step per screen, big pastel tile, 88 px 
 - **The timer chip stays on "Done for today." and "Weekend."**, so the settings are always one click away. The design hid it there.
 - The build your own Chrome runs is a copy in `~/Developer/micro.breaks-extension`, refreshed on request, so work in the project does not change it.
 
+## Test phase with friends: identity and analytics (4 October 2026)
+
+- **No accounts.** Each install gets a random ID. The welcome screen asks for an email, required to start, which is attached to that ID so the author can tell testers apart.
+- **Usage events go to PostHog** through its HTTP API, from the background (`src/background/analytics.ts`). No SDK. Events are queued in storage and sent in batches, so nothing is lost offline. Nothing is sent from dev builds or while `POSTHOG_KEY` in `src/config.ts` is empty.
+- **What is sent:** every event the engine logs (same names as the local event log), plus `installed`, `setup_started`, `setup_step_done`, `setup_completed`, `calendar_connected`, `calendar_disconnected`. Theme changes are left out. Never tabs, URLs or calendar content.
+- **New event `seated_streak_ended`** (`seatedMin`, `endedBy`): logged whenever the seated timer restarts or stops. A skip does not end a streak. This is what the "longest seated streak ≤ 60 min" goal is read from.
+- The welcome screen and the README both say what is shared.
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.

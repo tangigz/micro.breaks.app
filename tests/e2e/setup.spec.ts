@@ -15,7 +15,13 @@ test('install opens the welcome flow, and every new tab leads to it until it is 
 test('one screen: the battery fills as the three steps are completed', async ({ engine, home }) => {
   await engine.setClock(2030, 1, 7, 10);
   await expect(home.getByText('More energy')).toBeVisible();
+  // The test phase asks for an email first, and says what is shared
+  await expect(home.getByText('Your email and how you use it')).toBeVisible();
+  await expect(home.getByRole('button', { name: "Let's start" })).toBeDisabled();
+  await home.getByLabel('Your email').fill('not an email');
+  await expect(home.getByRole('button', { name: "Let's start" })).toBeDisabled();
   await shot(home, 'welcome');
+  await home.getByLabel('Your email').fill('Friend@Example.com');
   await home.getByRole('button', { name: "Let's start" }).click();
 
   // Step 1 is open: the movement timer, editable in place
@@ -67,9 +73,28 @@ test('one screen: the battery fills as the three steps are completed', async ({ 
   const state = await engine.send({ type: 'tick' });
   expect(state.setupDone).toBe(true);
   expect(state.seatedSince).not.toBeNull();
+
+  // What would go to PostHog: the setup funnel, under one install id, with the email attached
+  const tracked = await engine.tracked();
+  expect(tracked.map((e) => e.event)).toEqual([
+    'installed',
+    'setup_started',
+    'setting_changed',
+    'setup_step_done',
+    'setup_step_done',
+    'setup_step_done',
+    'setup_completed',
+    'day_start',
+  ]);
+  expect(new Set(tracked.map((e) => e.distinct_id)).size).toBe(1);
+  expect(tracked[0]!.distinct_id).toMatch(/^[0-9a-f-]{36}$/);
+  expect(tracked.at(-1)!.properties.$set).toEqual({ email: 'friend@example.com' });
+  expect(tracked.filter((e) => e.event === 'setup_step_done').map((e) => e.properties.step)).toEqual([1, 2, 3]);
+  expect(tracked.find((e) => e.event === 'setup_completed')!.properties).toMatchObject({ intervalMin: 45, days: 'every', calendar: false });
 });
 
 test('a done step can be reopened', async ({ home }) => {
+  await home.getByLabel('Your email').fill('Friend@Example.com');
   await home.getByRole('button', { name: "Let's start" }).click();
   await home.getByRole('button', { name: 'Continue' }).click();
   await expect(home.getByRole('button', { name: 'Allow' })).toBeVisible();

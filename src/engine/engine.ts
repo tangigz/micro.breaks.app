@@ -55,7 +55,11 @@ export function step(prev: State, input: Input, now: number): StepResult {
   const interval = () => s.settings.intervalMin * MIN;
   const awayBreak = () => s.settings.awayBreakMin * MIN;
 
-  const stopTracking = () => {
+  /** Ends the seated streak, if one is running. `by` says what ended it. */
+  const stopTracking = (by: string) => {
+    if (s.seatedSince != null) {
+      log('seated_streak_ended', { seatedMin: Math.round((now - s.seatedSince) / MIN), endedBy: by });
+    }
     s.seatedSince = null;
     s.dueAt = null;
     s.headsUpFor = null;
@@ -75,7 +79,7 @@ export function step(prev: State, input: Input, now: number): StepResult {
 
   /** The battery is full again; the seated timer restarts from zero at the next activity. */
   const recharge = (kind: Outcome['kind']) => {
-    stopTracking();
+    stopTracking(kind);
     s.gap = null;
     s.outcome = { kind, at: now };
   };
@@ -155,21 +159,21 @@ export function step(prev: State, input: Input, now: number): StepResult {
     s.homeOpened = false;
     s.skipsToday = 0;
     s.gap = null;
-    stopTracking();
+    stopTracking('new_day');
     dismissPrompt('new_day');
   }
   if (s.setupDone) {
     const lunchStart = tsAt(now, s.settings.lunchStart);
     if (s.seatedSince != null && s.seatedSince < lunchStart && now >= lunchStart) {
       log('lunch');
-      stopTracking();
+      stopTracking('lunch');
       s.gap = null;
       dismissPrompt('lunch');
     }
     if (now >= tsAt(now, s.settings.dayEnd) && s.dayStarted && !s.dayEnded) {
       s.dayEnded = true;
       log('day_end');
-      stopTracking();
+      stopTracking('day_end');
       s.gap = null;
       dismissPrompt('day_end');
     }
@@ -228,7 +232,7 @@ export function step(prev: State, input: Input, now: number): StepResult {
       log('setting_changed', { ...input.patch });
       if (s.seatedSince != null && !inWindow(s.settings, now)) {
         // The new hours, days or lunch exclude right now
-        stopTracking();
+        stopTracking('setting_changed');
         dismissPrompt('setting_changed');
       } else if (input.patch.intervalMin != null && s.seatedSince != null) {
         s.dueAt = s.seatedSince + interval();

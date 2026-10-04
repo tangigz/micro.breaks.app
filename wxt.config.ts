@@ -19,8 +19,9 @@ export default defineConfig({
     description: 'Move a little, every hour you sit.',
     key: KEY,
     permissions: ['idle', 'alarms', 'notifications', 'storage', 'tabs', 'declarativeNetRequestWithHostAccess', 'identity'],
-    // Video missions embed YouTube (src/background/youtube.ts); meetings come from Google Calendar (src/background/calendar.ts)
-    host_permissions: ['https://www.youtube-nocookie.com/*', 'https://www.googleapis.com/calendar/*'],
+    // Video missions embed YouTube (src/background/youtube.ts); meetings come from Google Calendar
+    // (src/background/calendar.ts); usage events go to PostHog (src/background/analytics.ts)
+    host_permissions: ['https://www.youtube-nocookie.com/*', 'https://www.googleapis.com/calendar/*', 'https://*.i.posthog.com/*'],
     // Read-only, busy times only: no event titles, no attendees
     ...(GOOGLE_CLIENT_ID
       ? { oauth2: { client_id: GOOGLE_CLIENT_ID, scopes: ['https://www.googleapis.com/auth/calendar.freebusy'] } }

@@ -127,6 +127,7 @@ export type EventType =
   | 'skip_challenge_shown'
   | 'skip_passed'
   | 'away_break'
+  | 'seated_streak_ended'
   | 'setting_changed';
 
 export type Effect =

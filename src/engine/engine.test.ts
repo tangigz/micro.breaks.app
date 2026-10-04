@@ -176,6 +176,42 @@ describe('movement timer', () => {
   });
 });
 
+describe('seated streaks', () => {
+  const streaks = (sim: Sim) => sim.logged('seated_streak_ended').map((e) => (e.type === 'log' ? e.payload : null));
+
+  it('records how long the user sat, and what ended it', () => {
+    const sim = working();
+    sim.wait(20);
+    sim.leave();
+    expect(streaks(sim)).toEqual([{ seatedMin: 25, endedBy: 'away' }]);
+
+    sim.back();
+    sim.wait(60);
+    sim.doMission();
+    expect(streaks(sim)[1]).toMatchObject({ endedBy: 'mission' });
+    expect((streaks(sim)[1] as { seatedMin: number }).seatedMin).toBeGreaterThanOrEqual(60);
+  });
+
+  it('a skip does not end the streak: it keeps growing until a real break', () => {
+    const sim = working();
+    sim.wait(60);
+    sim.passSkip();
+    expect(streaks(sim)).toEqual([]);
+    sim.wait(30);
+    sim.leave();
+    expect(streaks(sim)).toEqual([{ seatedMin: 95, endedBy: 'away' }]);
+  });
+
+  it('lunch and the end of the day end it too', () => {
+    const sim = new Sim(at(12, 0));
+    sim.to(at(12, 30));
+    expect(streaks(sim)).toEqual([{ seatedMin: 30, endedBy: 'lunch' }]);
+    // Back at 13:30, then at the computer with the prompt ignored until the end of the day
+    sim.to(at(18, 0));
+    expect(streaks(sim)[1]).toEqual({ seatedMin: 270, endedBy: 'day_end' });
+  });
+});
+
 describe('recharging', () => {
   it('recharges after 5+ min away without a prompt', () => {
     const sim = working();

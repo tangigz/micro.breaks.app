@@ -17,7 +17,7 @@ micro.breaks is in a test phase. It is not on the Chrome Web Store yet, so you i
 3. In Chrome, open `chrome://extensions`.
 4. Turn on **Developer mode**, top right.
 5. Click **Load unpacked** and choose the **micro.breaks** folder.
-6. A welcome page opens. Follow the three steps, then click **Start moving**.
+6. A welcome page opens. Enter your email, follow the three steps, then click **Start moving**.
 
 Chrome may ask whether to keep the new tab page that micro.breaks sets. Choose to keep it: the battery lives there.
 
@@ -51,9 +51,15 @@ When a new version is announced: download the new zip, replace the contents of y
 - **Remove it:** in `chrome://extensions`, click **Remove** on the micro.breaks card. Your new tab goes back to normal straight away and everything micro.breaks stored is deleted. You can then delete the **micro.breaks** folder.
 - **If you connected Google Calendar:** remove the access at [myaccount.google.com/connections](https://myaccount.google.com/connections), under micro.breaks.
 
-### What it stores
+### What it stores and shares
 
-Your settings and a log of your breaks stay in your browser. Video missions play from YouTube. If you connect Google Calendar, your busy times are read from Google. Nothing else leaves your computer.
+micro.breaks is in a test phase, so it shares how you use it with its author, Tangi, to learn whether it works:
+
+- **Shared:** the email you give on the welcome screen, and what happens inside micro.breaks: setup steps, breaks shown, started, completed or skipped, time spent seated between breaks, and your timer settings. These go to [PostHog](https://posthog.com), an analytics service.
+- **Never shared:** the sites you visit, your tabs, anything you type outside micro.breaks, and your calendar. If you connect Google Calendar, your busy times are read on your computer and stay there.
+- Video missions play from YouTube.
+
+Removing the extension stops all of it.
 
 ### Feedback
 

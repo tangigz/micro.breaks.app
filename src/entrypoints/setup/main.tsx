@@ -3,7 +3,7 @@ import { browser } from 'wxt/browser';
 import brain from '@/assets/emoji/brain.png';
 import biceps from '@/assets/emoji/flexed-biceps.png';
 import voltage from '@/assets/emoji/high-voltage.png';
-import { send, setCalendar, useEngine } from '@/data/client';
+import { send, setCalendar, track, useEngine } from '@/data/client';
 import { useStored } from '@/data/stored';
 import type { Settings } from '@/engine';
 import { Battery, Halo } from '@/ui/Battery';
@@ -100,6 +100,8 @@ function Setup() {
   const [progress, setProgress] = useStored<Progress>('setup', START);
   const [view, setView] = useStored<number | null>('setupView', null);
   const [calendarError, setCalendarError] = useState<string>();
+  const [email, setEmail] = useState('');
+  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const theme = engine?.state.settings.theme;
 
   useEffect(() => {
@@ -126,6 +128,11 @@ function Setup() {
     setProgress({ ...p, ...patch });
     setView(null);
   };
+  /** A step is completed. Counted once, even if the step is reopened and confirmed again. */
+  const completeStep = (step: number, patch: Partial<Progress>) => {
+    if (!done[step - 1]) track('setup_step_done', { step });
+    advance(patch);
+  };
   /** Records progress without leaving the step. */
   const stay = (patch: Partial<Progress>) => setProgress({ ...p, ...patch });
 
@@ -150,7 +157,7 @@ function Setup() {
     {
       head: 'Set your movement timer',
       summary: timerLine(state.settings),
-      main: { label: 'Continue', run: () => advance({ timer: true }) },
+      main: { label: 'Continue', run: () => completeStep(1, { timer: true }) },
       more: [],
     },
     {
@@ -170,7 +177,7 @@ function Setup() {
           : n === 1
             ? { label: 'Send a test', run: test }
             : n === 2
-              ? { label: 'Yes, it stayed', run: () => advance({ notifications: 3 }) }
+              ? { label: 'Yes, it stayed', run: () => completeStep(2, { notifications: 3 }) }
               : next,
       more: n === 2 ? [{ label: 'Send again', run: test }] : n >= 3 ? [{ label: 'Send a test', run: test }] : [],
     },
@@ -183,11 +190,13 @@ function Setup() {
           : p.login === 1
             ? 'System Settings › General › Login Items › “+” › Google Chrome.'
             : 'Chrome opens when you log in. micro.breaks starts with it.',
-      main: p.login >= 2 ? next : { label: 'Done', run: () => advance({ login: 2 }) },
+      main: p.login >= 2 ? next : { label: 'Done', run: () => completeStep(3, { login: 2 }) },
       more: [{ label: 'Show me how', run: () => stay({ login: 1 }) }],
     },
   ];
   const start = async () => {
+    const { intervalMin, dayStart, dayEnd, days, lunchStart, lunchEnd, calendar } = state.settings;
+    track('setup_completed', { intervalMin, dayStart, dayEnd, days, lunchStart, lunchEnd, calendar });
     await send({ type: 'setup_done' });
     location.href = '/newtab.html';
   };
@@ -236,10 +245,48 @@ function Setup() {
                 </li>
               ))}
             </ul>
-            <div className="flex items-center gap-3">
-              <Pill primary large action={{ label: "Let's start", run: () => setProgress({ ...p, started: true }) }} />
-              <span className="ml-2 text-[15px] leading-5 text-ink-2">Three steps to set your daily movement timer.</span>
-            </div>
+            {/* Test phase: an email tells testers apart in the usage data */}
+            <form
+              className="flex flex-col gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!validEmail) return;
+                void browser.storage.local
+                  .get('tester')
+                  .then(({ tester }) => browser.storage.local.set({ tester: { ...(tester as object), email: email.trim().toLowerCase() } }))
+                  .then(() => {
+                    track('setup_started');
+                    setProgress({ ...p, started: true });
+                  });
+              }}
+            >
+              <label htmlFor="tester-email" className="text-[15px] leading-5 font-semibold">
+                Your email
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  id="tester-email"
+                  type="email"
+                  value={email}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  spellCheck={false}
+                  className="h-14 w-[300px] rounded-full border-2 border-line-2 bg-bg px-6 text-[17px] text-ink outline-offset-2"
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  disabled={!validEmail}
+                  className={`inline-flex h-14 items-center rounded-full bg-ink px-9 text-[17px] font-semibold whitespace-nowrap text-on-ink ${validEmail ? 'cursor-pointer' : 'cursor-not-allowed opacity-40'}`}
+                >
+                  Let's start
+                </button>
+              </div>
+              <p className="m-0 max-w-[560px] text-[13px] leading-[18px] text-ink-2">
+                micro.breaks is in a test phase. Your email and how you use it (breaks done or skipped, your timer settings) are
+                shared with its author. Never the sites you visit or your calendar.
+              </p>
+            </form>
           </div>
         ) : (
           // Right: the three steps on one screen. One is open at a time.
