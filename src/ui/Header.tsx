@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { send } from '@/data/client';
 import type { Settings } from '@/engine';
 import { applyTheme } from './theme';
@@ -44,8 +45,8 @@ function ThemeToggle({ theme }: { theme: Settings['theme'] }) {
   );
 }
 
-/** Wordmark left, theme toggle right. Nothing else. With `back`: Back left, wordmark centred. */
-export function Header({ theme, back }: { theme: Settings['theme']; back?: string }) {
+/** Wordmark left, theme toggle right. With `back`: Back left, wordmark centred. Children sit before the toggle. */
+export function Header({ theme, back, children }: { theme: Settings['theme']; back?: string; children?: ReactNode }) {
   return (
     <header className="relative flex w-full items-center justify-between px-10 py-6">
       {back && (
@@ -69,7 +70,8 @@ export function Header({ theme, back }: { theme: Settings['theme']; back?: strin
         </a>
       )}
       <Wordmark />
-      <div className={back ? 'flex w-[88px] justify-end' : ''}>
+      <div className={`flex items-center justify-end gap-4 ${back ? 'w-[88px]' : ''}`}>
+        {children}
         <ThemeToggle theme={theme} />
       </div>
     </header>
