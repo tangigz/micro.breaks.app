@@ -15,4 +15,6 @@ export default defineWebExtConfig({
   binaries: { chrome: chromium.executablePath() },
   chromiumProfile: profile,
   keepProfileChanges: true,
+  // Lets scripts/dev.mjs and scripts/check-test-browser.mjs attach to the running test browser
+  chromiumArgs: ['--remote-debugging-port=9333'],
 });

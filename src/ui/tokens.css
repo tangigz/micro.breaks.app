@@ -87,3 +87,50 @@ body {
     transition: none !important;
   }
 }
+
+/* Battery halo: stronger as the level drops. Grey when the day is off. */
+:root {
+  --glow-min: 0.18;
+  --glow-max: 0.42;
+  --grey: 99 99 102;
+  --grey-glow: 0.1;
+}
+
+:root[data-theme='light'] {
+  --glow-min: 0.16;
+  --glow-max: 0.4;
+  --grey: 199 199 204;
+  --grey-glow: 0.18;
+}
+
+@keyframes battery-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+@keyframes battery-shine {
+  0% {
+    transform: translateY(120%);
+  }
+  100% {
+    transform: translateY(-320%);
+  }
+}
+
+.battery-breathe {
+  animation: battery-breathe 3.2s ease-in-out infinite;
+}
+
+.battery-shine {
+  animation: battery-shine 3.4s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}

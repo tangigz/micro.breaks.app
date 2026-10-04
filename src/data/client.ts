@@ -17,14 +17,20 @@ export function useEngine(): { state: State; now: number } | null {
   const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
+    // Time and state are read together, so a screen never shows a new state against an old clock
+    const refresh = () => void clockNow().then(setNow);
+    const update = (next: State) => {
+      setState(next);
+      refresh();
+    };
     // A tick makes the background create the state on first run
-    void send({ type: 'tick' }).then(setState);
+    void send({ type: 'tick' }).then(update);
     const onChanged = (changes: Record<string, { newValue?: unknown }>, area: string) => {
-      if (area === 'local' && changes[STATE_KEY]?.newValue) setState(changes[STATE_KEY].newValue as State);
+      if (area !== 'local') return;
+      if (changes[STATE_KEY]?.newValue) update(changes[STATE_KEY].newValue as State);
+      else refresh();
     };
     browser.storage.onChanged.addListener(onChanged);
-    const refresh = () => void clockNow().then(setNow);
-    refresh();
     const timer = setInterval(refresh, 1000);
     return () => {
       browser.storage.onChanged.removeListener(onChanged);
