@@ -44,12 +44,34 @@ function ThemeToggle({ theme }: { theme: Settings['theme'] }) {
   );
 }
 
-/** Wordmark left, theme toggle right. Nothing else. */
-export function Header({ theme }: { theme: Settings['theme'] }) {
+/** Wordmark left, theme toggle right. Nothing else. With `back`: Back left, wordmark centred. */
+export function Header({ theme, back }: { theme: Settings['theme']; back?: string }) {
   return (
     <header className="relative flex w-full items-center justify-between px-10 py-6">
+      {back && (
+        <a
+          href={back}
+          className="flex h-11 items-center gap-1.5 rounded-full bg-raised pr-4 pl-3 text-[15px] font-semibold text-ink no-underline"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+          Back
+        </a>
+      )}
       <Wordmark />
-      <ThemeToggle theme={theme} />
+      <div className={back ? 'flex w-[88px] justify-end' : ''}>
+        <ThemeToggle theme={theme} />
+      </div>
     </header>
   );
 }

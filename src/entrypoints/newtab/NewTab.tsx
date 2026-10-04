@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { browser } from 'wxt/browser';
 import calendar from '@/assets/emoji/calendar.png';
 import { send } from '@/data/client';
 import { type NewTabView, newTabView, type State } from '@/engine';
@@ -147,8 +146,11 @@ function Actions({ state, view }: { state: State; view: NewTabView }) {
           Start a break now
         </button>
       )}
-      {/* Opens the movement timer once it exists (#5) */}
-      <span className="inline-flex h-[52px] items-center gap-2.5 rounded-full border border-line px-[22px] text-[15px] font-medium text-ink-2">
+      <a
+        href="/settings.html"
+        aria-label={`Edit your movement timer: every ${settings.intervalMin} minutes, ${hours}`}
+        className="inline-flex h-[52px] items-center gap-2.5 rounded-full border border-line px-[22px] text-[15px] font-medium text-ink-2 no-underline"
+      >
         <svg
           width="18"
           height="18"
@@ -163,7 +165,7 @@ function Actions({ state, view }: { state: State; view: NewTabView }) {
           <path d="M12 9v4l2 2M10 2h4" />
         </svg>
         Every {settings.intervalMin} min · {hours}
-      </span>
+      </a>
     </div>
   );
 }
@@ -223,12 +225,12 @@ export function HealthLine() {
       <span>
         <b className="font-semibold">Notifications are off.</b> micro.breaks can't reach you outside Chrome.
       </span>
-      <button
-        className="h-9 cursor-pointer rounded-full bg-ink px-4 text-[15px] font-semibold text-on-ink"
-        onClick={() => void browser.tabs.create({ url: 'chrome://settings/content/notifications' })}
+      <a
+        href="/setup.html?step=2"
+        className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-[15px] font-semibold text-on-ink no-underline"
       >
         Turn on
-      </button>
+      </a>
     </div>
   );
 }

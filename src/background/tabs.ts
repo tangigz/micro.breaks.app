@@ -2,6 +2,7 @@ import { browser } from 'wxt/browser';
 
 export const HOME = '/newtab.html';
 export const MISSION = '/mission.html';
+export const SETUP = '/setup.html';
 
 async function focusWindow(windowId: number | undefined): Promise<void> {
   if (windowId == null) return;
@@ -10,7 +11,7 @@ async function focusWindow(windowId: number | undefined): Promise<void> {
 }
 
 /** Brings one of our pages to the front: its existing tab if there is one, a new tab otherwise. */
-export async function show(path: typeof HOME | typeof MISSION): Promise<void> {
+export async function show(path: typeof HOME | typeof MISSION | typeof SETUP): Promise<void> {
   const url = browser.runtime.getURL(path);
   const [existing] = await browser.tabs.query({ url });
   if (existing?.id != null) {

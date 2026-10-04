@@ -6,7 +6,7 @@ import { advanceClock, clockNow, toRealTime } from '@/data/clock';
 import { db } from '@/data/db';
 import { loadState, saveState } from '@/data/store';
 import { clearNotification, notify } from './notifications';
-import { HOME, MISSION, show } from './tabs';
+import { HOME, MISSION, SETUP, show } from './tabs';
 
 const TICK = 'tick';
 const WAKE = 'wake';
@@ -87,7 +87,7 @@ async function advance(ms: number): Promise<State> {
 
 export function start(): void {
   browser.runtime.onInstalled.addListener(({ reason }) => {
-    if (reason === 'install') void show(HOME);
+    if (reason === 'install') void show(SETUP);
   });
 
   browser.runtime.onStartup.addListener(() => void dispatch({ type: 'startup' }));

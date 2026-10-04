@@ -7,7 +7,7 @@ interface BatteryLook {
   idle?: boolean;
 }
 
-const rgb = ({ level, idle }: BatteryLook) => (idle ? 'var(--grey)' : batteryRgb(level).join(' '));
+export const rgb = ({ level, idle }: BatteryLook) => (idle ? 'var(--grey)' : batteryRgb(level).join(' '));
 
 /** 1100 px glow behind the battery, in the battery's colour. Grows stronger as the level drops. */
 export function Halo({ level, idle, dim }: BatteryLook & { dim?: boolean }) {
