@@ -245,7 +245,7 @@ function Setup() {
                 </li>
               ))}
             </ul>
-            {/* Test phase: an email tells testers apart in the usage data */}
+            {/* Test phase: an email tells testers apart in the usage data. What is shared is explained in the README. */}
             <form
               className="flex flex-col gap-3"
               onSubmit={(e) => {
@@ -279,10 +279,6 @@ function Setup() {
                   Let's start
                 </button>
               </div>
-              <p className="m-0 max-w-[560px] text-[13px] leading-[18px] text-ink-2">
-                micro.breaks is in a test phase. Your email and how you use it (breaks done or skipped, your timer settings) are
-                shared with its author. Never the sites you visit or your calendar.
-              </p>
             </form>
           </div>
         ) : (

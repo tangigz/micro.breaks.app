@@ -53,7 +53,7 @@ Replaces the design's step screens (one step per screen, big pastel tile, 88 px 
 
 ## After the first real install (4 October 2026)
 
-- **Connecting the calendar is a visible card**, "Skip my meetings", always shown under the timer sentence, in the setup step and on the movement timer screen. It replaces the "meetings" word in the sentence, which did not look clickable. Once connected, the sentence ends "…or during my Google meetings."
+- **Connecting the calendar is a visible card**, "Protect my meetings" ("You will never be prompted during your meetings."), always shown under the timer sentence, in the setup step and on the movement timer screen. It replaces the "meetings" word in the sentence, which did not look clickable. Once connected, the sentence ends "…or during my Google meetings."
 - **The timer chip stays on "Done for today." and "Weekend."**, so the settings are always one click away. The design hid it there.
 - The build your own Chrome runs is a copy in `~/Developer/micro.breaks-extension`, refreshed on request, so work in the project does not change it.
 
@@ -64,7 +64,7 @@ Replaces the design's step screens (one step per screen, big pastel tile, 88 px 
 - **What is sent, a shortlist of eight events:** `extension_installed`, `setup_step_done`, `setup_completed`, `mission_started`, `mission_completed`, `skip_challenge_shown`, `skip_passed`, `setting_changed` (theme changes left out). Each carries the extension version. Everything else the engine logs stays in the local event log. Never tabs, URLs or calendar content.
 - `seated_streak_ended` (`seatedMin`, `endedBy`) is logged locally whenever the seated timer restarts or stops, but is **not** on the shortlist. The "longest seated streak ≤ 60 min" goal can't be read from PostHog; neither can prompts that were ignored or walked away from.
 - The PostHog project is in the EU region.
-- The welcome screen and the README both say what is shared.
+- The README says what is shared. The welcome screen only asks for the email; the explanation there was removed.
 
 ## Smaller rules, agreed as defaults
 

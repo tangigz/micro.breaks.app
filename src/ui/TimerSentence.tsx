@@ -199,9 +199,9 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
         <div className="flex items-center gap-4">
           <img src={calendar} alt="" className={`shrink-0 ${look.cardIcon}`} />
           <div className="flex min-w-0 grow flex-col gap-0.5 text-left">
-            <span className="text-[17px] leading-6 font-semibold text-ink">Skip my meetings</span>
+            <span className="text-[17px] leading-6 font-semibold text-ink">Protect my meetings</span>
             <span className="text-[15px] leading-5 text-ink-2">
-              {saved.calendar ? 'No prompts while you are in a meeting.' : 'Prompts wait until your meeting ends. Read-only, busy times only.'}
+              {saved.calendar ? 'No prompts while you are in a meeting.' : 'You will never be prompted during your meetings.'}
             </span>
           </div>
           {saved.calendar ? (

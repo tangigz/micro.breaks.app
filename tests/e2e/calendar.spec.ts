@@ -12,8 +12,8 @@ test('the meetings card is always visible and says what connecting does', async 
   await engine.begin();
   await home.goto(home.url().replace('newtab.html', 'settings.html'));
   const card = home.getByRole('region', { name: 'Meetings' });
-  await expect(card.getByText('Skip my meetings')).toBeVisible();
-  await expect(card.getByText('Prompts wait until your meeting ends. Read-only, busy times only.')).toBeVisible();
+  await expect(card.getByText('Protect my meetings')).toBeVisible();
+  await expect(card.getByText('You will never be prompted during your meetings.')).toBeVisible();
   await expect(card.getByRole('button', { name: 'Connect Google Calendar' })).toBeVisible();
   // It stays there while a value is being picked
   await home.getByRole('button', { name: 'Interval, 60 min' }).click();

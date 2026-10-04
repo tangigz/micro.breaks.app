@@ -15,8 +15,7 @@ test('install opens the welcome flow, and every new tab leads to it until it is 
 test('one screen: the battery fills as the three steps are completed', async ({ engine, home }) => {
   await engine.setClock(2030, 1, 7, 10);
   await expect(home.getByText('More energy')).toBeVisible();
-  // The test phase asks for an email first, and says what is shared
-  await expect(home.getByText('Your email and how you use it')).toBeVisible();
+  // The test phase asks for an email first
   await expect(home.getByRole('button', { name: "Let's start" })).toBeDisabled();
   await home.getByLabel('Your email').fill('not an email');
   await expect(home.getByRole('button', { name: "Let's start" })).toBeDisabled();
