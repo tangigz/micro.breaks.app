@@ -1,0 +1,62 @@
+{
+  "missions": [
+    {
+      "id": "water",
+      "name": "Refill your water",
+      "cue": "Walk to the tap, fill your bottle, drink a glass there.",
+      "img": "droplet",
+      "tile": "blue"
+    },
+    {
+      "id": "stairs",
+      "name": "Climb the stairs",
+      "cue": "Two floors up and back down. No stairs nearby? Walk at a brisk pace instead.",
+      "img": "high-voltage",
+      "tile": "peach"
+    },
+    {
+      "id": "walk",
+      "name": "Go for a walk",
+      "cue": "A lap of the floor, the building or the block, at your usual pace. No phone.",
+      "img": "footprints",
+      "tile": "green"
+    },
+    {
+      "id": "daylight",
+      "name": "Daylight walk",
+      "cue": "A slow walk outside, or to an open window. Take in the natural light and some fresh air.",
+      "img": "sun",
+      "tile": "blue"
+    },
+    {
+      "id": "tidy",
+      "name": "Tidy run",
+      "cue": "Take your cup to the kitchen, bin something, come back.",
+      "img": "wastebasket",
+      "tile": "lilac"
+    },
+    {
+      "id": "stretch",
+      "name": "Seated stretch snack",
+      "cue": "Follow a short video on screen.",
+      "img": "chair",
+      "tile": "green",
+      "videos": [
+        { "id": "xRH1To_xyr8", "start": null, "end": null },
+        { "id": "qB1eaIUrlnw", "start": null, "end": null },
+        { "id": "nFIfv-jIgbI", "start": null, "end": null }
+      ]
+    },
+    {
+      "id": "boost",
+      "name": "Energy boost snack",
+      "cue": "Follow a short video on screen.",
+      "img": "flexed-biceps",
+      "tile": "lilac",
+      "videos": [
+        { "id": "BCUzHzpJLAI", "start": null, "end": null },
+        { "id": "MU_3eoa1-X0", "start": null, "end": null }
+      ]
+    }
+  ]
+}
