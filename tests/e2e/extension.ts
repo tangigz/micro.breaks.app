@@ -41,6 +41,7 @@ export const test = base.extend<Fixtures>({
   home: async ({ context, extensionId }, use) => {
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/newtab.html`);
+    await page.waitForURL(/setup\.html$/);
     await use(page);
   },
   engine: async ({ home }, use) => {
@@ -60,7 +61,10 @@ export const test = base.extend<Fixtures>({
         }, min * 60_000),
       begin: async () => {
         await send({ type: 'setup_done' });
-        return send({ type: 'idle', state: 'active' });
+        const state = await send({ type: 'idle', state: 'active' });
+        // Before setup the new tab hands over to the welcome flow: load it again now
+        await home.goto(home.url().replace(/[^/]+$/, 'newtab.html'));
+        return state;
       },
       advance: (min) => message({ mb: 'dev_advance', ms: min * 60_000 }),
       notifications: () =>

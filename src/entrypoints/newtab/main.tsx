@@ -32,7 +32,13 @@ function App() {
     if (theme) applyTheme(theme);
   }, [theme]);
 
-  if (!engine) return null;
+  // Until the welcome flow is finished, every new tab is the welcome flow
+  const needsSetup = engine != null && !engine.state.setupDone;
+  useEffect(() => {
+    if (needsSetup) location.replace('/setup.html');
+  }, [needsSetup]);
+
+  if (!engine || needsSetup) return null;
   return (
     <Frame>
       <Header theme={engine.state.settings.theme} />
