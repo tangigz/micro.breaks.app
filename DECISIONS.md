@@ -49,7 +49,7 @@ Replaces the design's step screens (one step per screen, big pastel tile, 88 px 
 - The extension now has a fixed ID, `hkgliedfglkhagpbpljdbfabimefocak`, set by the `key` in `wxt.config.ts`. The Google OAuth client is tied to it.
 - Access is through `chrome.identity.getAuthToken`, with one scope, `calendar.freebusy`: busy times only, no titles or attendees. It works in Google Chrome signed in to a Google account; it does not work in Chrome for Testing.
 - Busy blocks for the next 12 hours are fetched every 5 min and kept, so a meeting that starts between two polls is still known. Each tick derives "in a meeting until" from them. Back-to-back and overlapping meetings count as one.
-- The OAuth client ID (`GOOGLE_CLIENT_ID` in `wxt.config.ts`) is still empty. Until it is set, "Connect Google Calendar" answers "Google Calendar is not set up for this build yet."
+- The OAuth client (type "Chrome extension", Google Cloud project in testing mode) is set in `GOOGLE_CLIENT_ID` in `wxt.config.ts`. Only Google accounts listed as test users can connect.
 
 ## Smaller rules, agreed as defaults
 

@@ -3,9 +3,9 @@ import tailwindcss from '@tailwindcss/vite';
 
 /**
  * OAuth client for Google Calendar: type "Chrome extension", created in Google Cloud for the
- * extension ID below. Empty until it exists; "Connect Google Calendar" then says so.
+ * extension ID below. If left empty, "Connect Google Calendar" says it is not set up.
  */
-const GOOGLE_CLIENT_ID: string = '';
+const GOOGLE_CLIENT_ID: string = '541895009206-9g6rhs77sr2l74e2b53uq3mei1d7srsd.apps.googleusercontent.com';
 
 /** Public key that fixes the extension ID to hkgliedfglkhagpbpljdbfabimefocak, which the OAuth client is tied to. */
 const KEY =

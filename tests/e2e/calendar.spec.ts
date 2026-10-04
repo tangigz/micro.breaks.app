@@ -7,17 +7,18 @@ const at = (h: number, m = 0) => new Date(2030, 0, 7, h, m).getTime();
 const fakeCalendar = (page: Page, busy: [number, number][]) =>
   page.evaluate((b) => chrome.storage.local.set({ testCalendar: b }), busy);
 
-test('without an OAuth client, connecting says so and changes nothing', async ({ engine, home }) => {
+test('the meetings tray explains what connecting does', async ({ engine, home }) => {
   await engine.setClock(2030, 1, 7, 10);
   await engine.begin();
   await home.goto(home.url().replace('newtab.html', 'settings.html'));
   await home.getByRole('button', { name: 'Meetings, meetings' }).click();
   await expect(home.getByText('Skip my meetings')).toBeVisible();
-  await expect(home.getByText('Read-only, busy times only.')).toBeVisible();
+  await expect(home.getByText('Connect Google Calendar so prompts wait until your meeting ends. Read-only, busy times only.')).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Connect Google Calendar' })).toBeVisible();
   await home.screenshot({ path: 'test-results/calendar/tray.png' });
-  await home.getByRole('button', { name: 'Connect Google Calendar' }).click();
-  await expect(home.getByRole('alert')).toHaveText('Google Calendar is not set up for this build yet.');
-  expect((await engine.send({ type: 'tick' })).settings.calendar).toBe(false);
+  // The real sign-in is not exercised here: this browser has no Google account
+  await home.getByRole('button', { name: 'Close' }).click();
+  await expect(home.getByText('Click any highlighted word to change it.')).toBeVisible();
 });
 
 test('connected: the meeting pill, a held prompt, then the prompt when the meeting ends', async ({ context, engine, home }) => {
