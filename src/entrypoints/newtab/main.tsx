@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { createRoot } from 'react-dom/client';
 import { browser } from 'wxt/browser';
-import { useEngine } from '@/data/client';
+import { send, useEngine } from '@/data/client';
 import { DevBar } from '@/ui/DevBar';
 import { Frame } from '@/ui/Frame';
 import { Header } from '@/ui/Header';
+import { Recharged, rechargedEyebrow } from '@/ui/Recharged';
 import { applySavedTheme, applyTheme } from '@/ui/theme';
+import { mount } from '@/ui/mount';
 import '@/ui/tokens.css';
 import { HealthLine, NewTab } from './NewTab';
 
@@ -39,14 +40,21 @@ function App() {
   }, [needsSetup]);
 
   if (!engine || needsSetup) return null;
+  // A recharge earned away from the prompt (a coffee, "Yes, I moved") plays once, then the normal new tab
+  const { outcome } = engine.state;
+  const recharged = outcome != null && outcome.kind !== 'skipped' && !engine.state.break;
   return (
     <Frame>
       <Header theme={engine.state.settings.theme} />
-      <NewTab {...engine} />
+      {recharged ? (
+        <Recharged eyebrow={rechargedEyebrow(outcome.kind)} onDone={() => void send({ type: 'outcome_seen' })} />
+      ) : (
+        <NewTab {...engine} />
+      )}
       {!allowed && engine.state.setupDone && <HealthLine />}
       <DevBar {...engine} />
     </Frame>
   );
 }
 
-createRoot(document.getElementById('root')!).render(<App />);
+mount(<App />);

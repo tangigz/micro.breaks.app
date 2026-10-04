@@ -403,23 +403,58 @@ describe('the break', () => {
     expect(sim.state.seatedSince).toBe(sim.now);
   });
 
-  it('makes a video mission last the trimmed video, one video per break, rotating', () => {
-    const video = MISSIONS.find((m) => m.videos)!;
+  it('video mission: runs on the clock, one video per break, rotating, and ends with "I\'ve done the routine"', () => {
+    const video = MISSIONS.find((m) => m.id === 'stretch')!;
     const sim = working();
-    const startVideo = (videoDurationMs?: number) => {
+    const play = (videoDurationMs: number) => {
       sim.send({ type: 'start_break_now' });
       sim.state.break!.missionId = video.id;
       sim.send({ type: 'start_mission', videoDurationMs });
       const b = sim.state.break!;
-      sim.send({ type: 'idle', state: 'locked' });
-      sim.wait(b.durationMs / MIN);
+      // Too early: the button does nothing
+      sim.send({ type: 'video_done' });
+      expect(sim.state.break).not.toBeNull();
+      // Touching the keyboard changes nothing, and neither does being away
+      sim.wait(b.durationMs / MIN - 1);
       sim.back();
+      expect(missionView(sim.state, sim.now)).toMatchObject({ video: true, remainingMs: MIN });
+      sim.wait(1);
+      expect(sim.state.break).not.toBeNull();
+      sim.send({ type: 'video_done' });
+      expect(sim.state.break).toBeNull();
+      expect(sim.state.outcome?.kind).toBe('mission');
       return b;
     };
-    expect(startVideo(4 * MIN)).toMatchObject({ videoIndex: 0, durationMs: 4 * MIN });
-    expect(startVideo(7 * MIN)).toMatchObject({ videoIndex: 1, durationMs: 7 * MIN });
-    expect(startVideo().videoIndex).toBe(2);
-    expect(startVideo().videoIndex).toBe(0);
+    expect(play(4 * MIN)).toMatchObject({ videoIndex: 0, durationMs: 4 * MIN });
+    expect(play(7 * MIN)).toMatchObject({ videoIndex: 1, durationMs: 7 * MIN });
+    expect(play(3 * MIN).videoIndex).toBe(2);
+    expect(play(3 * MIN).videoIndex).toBe(0);
+  });
+
+  it('a trimmed video lasts from its start to its end', () => {
+    const boost = MISSIONS.find((m) => m.id === 'boost')!;
+    expect(boost.videos![0]).toMatchObject({ start: 40, end: 170 });
+    const sim = working();
+    sim.send({ type: 'start_break_now' });
+    sim.state.break!.missionId = boost.id;
+    sim.send({ type: 'start_mission' });
+    expect(sim.state.break).toMatchObject({ durationMs: 130_000, videoIndex: 0 });
+    expect(sim.state.break!.awaitingVideoDuration).toBeFalsy();
+  });
+
+  it('takes the length of an untrimmed video from the player, keeping the time already spent away', () => {
+    const video = MISSIONS.find((m) => m.id === 'stretch')!;
+    const sim = working();
+    sim.send({ type: 'start_break_now' });
+    sim.state.break!.missionId = video.id;
+    sim.send({ type: 'start_mission' });
+    expect(sim.state.break).toMatchObject({ durationMs: 5 * MIN, awaitingVideoDuration: true });
+    sim.wait(1);
+    sim.send({ type: 'video_duration', ms: 7 * MIN });
+    expect(missionView(sim.state, sim.now)).toMatchObject({ durationMs: 7 * MIN, remainingMs: 6 * MIN });
+    // Reported once: a second report changes nothing
+    sim.send({ type: 'video_duration', ms: 2 * MIN });
+    expect(sim.state.break!.durationMs).toBe(7 * MIN);
   });
 
   it('"Start a break now" opens the same prompt, free to cancel until the mission starts', () => {

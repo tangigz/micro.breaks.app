@@ -52,6 +52,9 @@ export function DevBar({ state, now }: { state: State; now: number }) {
             Come back
           </button>
         )}
+        <a className={`${button} inline-flex items-center no-underline`} href="/videos.html">
+          Videos
+        </a>
         <button className={button} onClick={() => void reset()}>
           Reset
         </button>

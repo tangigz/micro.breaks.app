@@ -42,6 +42,8 @@ export const test = base.extend<Fixtures>({
     const page = await context.newPage();
     await page.goto(`chrome-extension://${extensionId}/newtab.html`);
     await page.waitForURL(/setup\.html$/);
+    // Idle changes are sent by the tests; the real state of this machine must not interfere
+    await page.evaluate(() => chrome.storage.local.set({ testIgnoreIdle: true }));
     await use(page);
   },
   engine: async ({ home }, use) => {

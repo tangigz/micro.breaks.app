@@ -30,6 +30,20 @@ Replaces the design's step screens (one step per screen, big pastel tile, 88 px 
 - Step 1 holds the editable timer sentence itself. One button, "Continue". No "Keep these" / "Edit".
 - Headline "Charge your battery." / "Three steps and micro.breaks is ready.", then "All set." with Start moving on the same screen.
 
+## Mission timer and video missions (4 October 2026)
+
+- "Paused" (amber ring, "Step away to continue.") only shows once some time has run and the user came back. Right after Start mission the ring is green and says "Leave the computer.": nothing is paused yet.
+- YouTube refuses embeds without a Referer, and extension pages send none. The extension adds one to its own player frames only (`src/background/youtube.ts`). This needs the `declarativeNetRequestWithHostAccess` permission and access to `www.youtube-nocookie.com`.
+- Until trim points are set, a video mission lasts the full length the player reports.
+- **Video missions run on the clock, not on being away.** The user is watching the screen, so touching the keyboard pauses nothing. When the video's length has passed, the countdown gives way to a button, "I've done the routine", which recharges the battery. Chrome stays locked until it is clicked.
+- Trim points (in `content/missions.json`):
+  - Seated stretch 1, "5 min SEATED STRETCH": not trimmed, plays in full (5:29)
+  - Seated stretch 2, "5 Minute Reset [OFFICE STRETCH]": 0:05 to 5:20
+  - Seated stretch 3, "5 Stretches At Your Desk": 0:47 to 5:10
+  - Energy boost 1, "Sedentary Lifestyle? Daily Follow Along": 0:40 to 2:50
+  - Energy boost 2, "5 MIN MIDDAY ENERGY BOOST": 0:40 to 6:11
+- "Back to work" closes the mission tab, so the user lands on what they had before. If it is the only tab, it becomes the new tab.
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.

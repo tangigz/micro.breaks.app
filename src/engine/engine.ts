@@ -109,6 +109,13 @@ export function step(prev: State, input: Input, now: number): StepResult {
     s.outcome = { kind: 'skipped', at: now };
   };
 
+  const completeMission = (m: Break) => {
+    log('mission_completed', { missionId: m.missionId, durationMs: m.durationMs, voluntary: m.voluntary });
+    endBreak();
+    recharge('mission');
+    fx.push({ type: 'notify', kind: 'mission_done' });
+  };
+
   /** Back at the keyboard: the mission timer pauses. */
   const onActivity = () => {
     const b = s.break;
@@ -204,7 +211,8 @@ export function step(prev: State, input: Input, now: number): StepResult {
         // "idle" is reported once the detection interval has passed without input: credit it back
         const since = input.state === 'idle' ? now - (input.idleForMs ?? 0) : now;
         if (s.awaySince == null) s.awaySince = since;
-        if (b?.phase === 'mission' && b.runningSince == null) {
+        // Video missions run on the clock, not on being away: the user is watching the screen
+        if (b?.phase === 'mission' && b.videoIndex == null && b.runningSince == null) {
           b.runningSince = Math.max(since, b.lastActivityAt);
         }
       }
@@ -270,8 +278,10 @@ export function step(prev: State, input: Input, now: number): StepResult {
         const v = m.videos[i]!;
         if (input.videoDurationMs != null) duration = input.videoDurationMs;
         else if (v.end != null) duration = (v.end - (v.start ?? 0)) * 1000;
+        else b.awaitingVideoDuration = true;
       }
       b.phase = 'mission';
+      b.startedAt = now;
       b.durationMs = duration;
       b.remainingMs = duration;
       b.runningSince = null;
@@ -280,6 +290,23 @@ export function step(prev: State, input: Input, now: number): StepResult {
       log('mission_started', { missionId: b.missionId, videoIndex: b.videoIndex, durationMs: duration, voluntary: b.voluntary });
       break;
     }
+
+    case 'video_duration': {
+      // The mission lasts the video, minus what the trim leaves out at the start
+      if (b?.phase !== 'mission' || !b.awaitingVideoDuration || !(input.ms > 0)) break;
+      const start = (mission(b.missionId).videos?.[b.videoIndex ?? 0]?.start ?? 0) * 1000;
+      b.durationMs = Math.max(0, input.ms - start);
+      b.remainingMs = b.durationMs;
+      b.awaitingVideoDuration = false;
+      break;
+    }
+
+    case 'video_done':
+      // "I've done the routine": accepted once the video's length has passed since Start mission
+      if (b?.phase === 'mission' && b.videoIndex != null && videoTimeLeft(b, now) <= 0) {
+        completeMission(b);
+      }
+      break;
 
     case 'skip_open':
       if (b && !b.skip) {
@@ -318,12 +345,7 @@ export function step(prev: State, input: Input, now: number): StepResult {
   // --- What follows from the new state ---
   if (s.setupDone) {
     const m = s.break;
-    if (m?.phase === 'mission' && m.runningSince != null && now - m.runningSince >= m.remainingMs) {
-      log('mission_completed', { missionId: m.missionId, durationMs: m.durationMs, voluntary: m.voluntary });
-      endBreak();
-      recharge('mission');
-      fx.push({ type: 'notify', kind: 'mission_done' });
-    }
+    if (m?.phase === 'mission' && m.runningSince != null && now - m.runningSince >= m.remainingMs) completeMission(m);
 
     settleAway();
 
@@ -365,6 +387,11 @@ export function step(prev: State, input: Input, now: number): StepResult {
 
   s.lastSeenAt = now;
   return { state: s, effects: fx };
+}
+
+/** Time left on a video mission: its length, counted from Start mission. */
+export function videoTimeLeft(b: Break, now: number): number {
+  return Math.max(0, b.durationMs - (now - (b.startedAt ?? b.openedAt)));
 }
 
 /** Chrome is locked onto the mission tab from the prompt until the mission is completed or skipped. */

@@ -7,6 +7,7 @@ import { db } from '@/data/db';
 import { loadState, saveState } from '@/data/store';
 import { clearNotification, notify } from './notifications';
 import { HOME, MISSION, SETUP, show } from './tabs';
+import { allowYouTubeEmbeds } from './youtube';
 
 const TICK = 'tick';
 const WAKE = 'wake';
@@ -84,13 +85,21 @@ async function enforceLock(): Promise<void> {
   const state = cache ?? (await loadState(await clockNow()));
   if (!isLocked(state)) return;
   const [active] = await browser.tabs.query({ active: true, lastFocusedWindow: true });
-  if ((active?.pendingUrl ?? active?.url) === browser.runtime.getURL(MISSION)) return;
+  const url = active?.pendingUrl ?? active?.url;
+  if (url === browser.runtime.getURL(MISSION)) return;
+  // Test mode: the video review page stays reachable during a break
+  if (import.meta.env.DEV && url === browser.runtime.getURL('/videos.html')) return;
   try {
     await show(MISSION);
   } catch {
     // Chrome refuses tab changes while the user is dragging a tab: try once more
     setTimeout(() => void show(MISSION).catch(() => {}), 200);
   }
+}
+
+/** Browser tests send idle changes by hand; the machine's real idle state must not interfere. */
+async function realIdleIgnored(): Promise<boolean> {
+  return (await browser.storage.local.get('testIgnoreIdle')).testIgnoreIdle === true;
 }
 
 /** Test mode: moves the clock forward, ticking every minute on the way like the alarm would. */
@@ -112,9 +121,12 @@ export function start(): void {
   browser.alarms.onAlarm.addListener(() => void dispatch({ type: 'tick' }));
 
   browser.idle.onStateChanged.addListener((idle) => {
-    const state = idle as IdleState;
-    const idleForMs = state === 'idle' && cache ? detectionSeconds(cache) * 1000 : undefined;
-    void dispatch({ type: 'idle', state, idleForMs });
+    void realIdleIgnored().then((ignored) => {
+      if (ignored) return;
+      const state = idle as IdleState;
+      const idleForMs = state === 'idle' && cache ? detectionSeconds(cache) * 1000 : undefined;
+      void dispatch({ type: 'idle', state, idleForMs });
+    });
   });
 
   browser.tabs.onActivated.addListener(() => void enforceLock());
@@ -142,10 +154,15 @@ export function start(): void {
     return true;
   });
 
+  void allowYouTubeEmbeds();
+
   // Every time the service worker wakes: the alarm exists, and the idle state has not changed behind our back
   void (async () => {
     if (!(await browser.alarms.get(TICK))) await browser.alarms.create(TICK, { periodInMinutes: 1 });
     const state = await dispatch({ type: 'tick' });
+    // A break is still open (the extension was reloaded or updated mid-break): bring its tab back
+    if (isLocked(state)) void enforceLock();
+    if (await realIdleIgnored()) return;
     const idle = (await browser.idle.queryState(detectionSeconds(state))) as IdleState;
     if (idle !== state.idle) {
       await dispatch({ type: 'idle', state: idle, idleForMs: idle === 'idle' ? detectionSeconds(state) * 1000 : undefined });
