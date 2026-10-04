@@ -93,7 +93,7 @@ function BatteryShape({ label, children, glow }: { label: string; children: Reac
 
 const BENEFITS = [
   { img: voltage, tile: 'bg-tile-peach', title: 'More energy', text: 'No afternoon crash.' },
-  { img: brain, tile: 'bg-tile-lilac', title: 'Sharper focus', text: 'It lasts until the work is done.' },
+  { img: brain, tile: 'bg-tile-lilac', title: 'Sharper focus', text: 'Until the work is done.' },
   { img: biceps, tile: 'bg-tile-green', title: 'A looser body', text: 'No stiff neck or lower back.' },
 ];
 
@@ -231,14 +231,22 @@ function Setup() {
         {/* Right: one step is the whole screen */}
         <div className="relative flex flex-col gap-9">
           <div className="flex flex-col gap-3.5">
-            <div
-              className={`text-[13px] leading-4 font-medium tracking-[0.08em] uppercase ${ready || stepDone ? 'text-pos' : 'text-ink-2'}`}
-            >
-              {welcome ? 'Welcome' : ready ? 'Setup complete' : `Step ${shown + 1} of 3${stepDone ? ' · Done' : ''}`}
-            </div>
-            <h1 className="m-0 w-[551px] text-[88px] leading-[88px] font-bold tracking-[-0.045em]">
-              {welcome ? 'Stay charged all day.' : ready ? 'All set.' : step.head}
-            </h1>
+            {!welcome && (
+              <div
+                className={`text-[13px] leading-4 font-medium tracking-[0.08em] uppercase ${ready || stepDone ? 'text-pos' : 'text-ink-2'}`}
+              >
+                {ready ? 'Setup complete' : `Step ${shown + 1} of 3${stepDone ? ' · Done' : ''}`}
+              </div>
+            )}
+            {welcome ? (
+              <h1 className="m-0 text-[72px] leading-[76px] font-bold tracking-[-0.045em] whitespace-nowrap">
+                Stay charged all day.
+              </h1>
+            ) : (
+              <h1 className="m-0 w-[551px] text-[88px] leading-[88px] font-bold tracking-[-0.045em]">
+                {ready ? 'All set.' : step.head}
+              </h1>
+            )}
             <div className="max-w-[560px] text-[22px] leading-[30px] font-semibold tracking-[-0.01em] text-ink-2">
               {welcome
                 ? 'We help you build regular, short active breaks into your workday.'
@@ -267,8 +275,8 @@ function Setup() {
           <div className="flex items-center gap-3">
             {welcome ? (
               <>
-                <Pill primary action={{ label: 'Set it up', run: () => setProgress({ ...p, started: true }) }} />
-                <span className="ml-2 text-[15px] leading-5 text-ink-2">Three steps, about a minute.</span>
+                <Pill primary action={{ label: "Let's start", run: () => setProgress({ ...p, started: true }) }} />
+                <span className="ml-2 text-[15px] leading-5 text-ink-2">Three steps to set your daily movement timer.</span>
               </>
             ) : ready ? (
               <Pill

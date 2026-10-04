@@ -15,9 +15,9 @@ test('install opens the welcome flow, and every new tab leads to it until it is 
 test('welcome, three steps, all set, start moving', async ({ engine, home }) => {
   await engine.setClock(2030, 1, 7, 10);
   await expect(home.getByText('More energy')).toBeVisible();
-  await expect(home.getByText('Three steps, about a minute.')).toBeVisible();
+  await expect(home.getByText('Three steps to set your daily movement timer.')).toBeVisible();
   await shot(home, 'welcome');
-  await home.getByRole('button', { name: 'Set it up' }).click();
+  await home.getByRole('button', { name: "Let's start" }).click();
 
   // Step 1: movement timer
   await expect(home.getByText('Step 1 of 3')).toBeVisible();
@@ -66,7 +66,7 @@ test('welcome, three steps, all set, start moving', async ({ engine, home }) => 
 });
 
 test('a cell reopens its step', async ({ home }) => {
-  await home.getByRole('button', { name: 'Set it up' }).click();
+  await home.getByRole('button', { name: "Let's start" }).click();
   await home.getByRole('button', { name: 'Keep these' }).click();
   await home.getByRole('button', { name: 'Step 1, done' }).click();
   await expect(home.getByText('Step 1 of 3 · Done')).toBeVisible();
@@ -75,7 +75,7 @@ test('a cell reopens its step', async ({ home }) => {
 });
 
 test('movement timer: every highlighted word is editable', async ({ engine, home }) => {
-  await home.getByRole('button', { name: 'Set it up' }).click();
+  await home.getByRole('button', { name: "Let's start" }).click();
   await home.getByRole('link', { name: 'Edit' }).click();
   await expect(home).toHaveURL(/settings\.html\?from=setup$/);
   await expect(home.getByText('Click any highlighted word to change it.')).toBeVisible();

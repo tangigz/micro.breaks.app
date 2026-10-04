@@ -14,6 +14,12 @@ Decisions taken after `docs/spec.html` (v3, 3 October 2026). Where they differ f
 - **Stale style-guide content is ignored**: intent cards, moves rail, "Break logged.", "+N min", today's dot, the overdue time on the prompt.
 - **Measuring the test week**: product analytics (PostHog) is being considered. To be discussed; nothing is built yet.
 
+## Welcome screen copy (4 October 2026)
+
+- No "WELCOME" eyebrow. "Stay charged all day." sits on one line, at 72 px.
+- "Sharper focus": "Until the work is done."
+- Button: "Let's start". Next to it: "Three steps to set your daily movement timer."
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.
