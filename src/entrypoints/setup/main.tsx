@@ -9,12 +9,11 @@ import laptop from '@/assets/emoji/laptop.png';
 import stopwatch from '@/assets/emoji/stopwatch.png';
 import { send, useEngine } from '@/data/client';
 import { useStored } from '@/data/stored';
-import type { Settings } from '@/engine';
-import { Halo, rgb } from '@/ui/Battery';
+import { Halo } from '@/ui/Battery';
 import { DevBar } from '@/ui/DevBar';
 import { Frame } from '@/ui/Frame';
-import { timeOfDay } from '@/ui/format';
 import { Header } from '@/ui/Header';
+import { TimerSentence } from '@/ui/TimerSentence';
 import { applySavedTheme, applyTheme } from '@/ui/theme';
 import '@/ui/tokens.css';
 
@@ -38,7 +37,8 @@ interface Step {
   img: string;
   tile: string;
   head: string;
-  desc: string;
+  /** Step 1 shows the editable sentence instead. */
+  desc?: string;
   main: Action;
   more: Action[];
 }
@@ -52,11 +52,6 @@ async function sendTest(): Promise<void> {
     message: "This one stays until you close it. That's how your breaks will reach you.",
     requireInteraction: true,
   });
-}
-
-function timerLine(s: Settings): string {
-  const days = s.days === 'every' ? 'every day' : 'on weekdays';
-  return `Every ${s.intervalMin} min, ${timeOfDay(s.dayStart)}–${timeOfDay(s.dayEnd)}, ${days}. Not during lunch, ${timeOfDay(s.lunchStart)}⁠–⁠${timeOfDay(s.lunchEnd)}.`;
 }
 
 function Pill({ action, primary }: { action: Action; primary?: boolean }) {
@@ -154,9 +149,8 @@ function Setup() {
       img: stopwatch,
       tile: 'bg-tile-lilac',
       head: 'Set your movement timer.',
-      desc: timerLine(state.settings),
-      main: p.timer ? next(0) : { label: 'Keep these', run: () => advance({ timer: true }) },
-      more: [{ label: 'Edit', href: '/settings.html?from=setup' }],
+      main: { label: 'Continue', run: () => advance({ timer: true }) },
+      more: [],
     },
     {
       img: bell,
@@ -195,7 +189,6 @@ function Setup() {
     },
   ];
   const step = steps[Math.min(shown, 2)]!;
-  const stepDone = !welcome && !ready && done[shown];
 
   const start = async () => {
     await send({ type: 'setup_done' });
@@ -205,118 +198,113 @@ function Setup() {
   // Charge colour: coral at 0 of 3, amber, green at 3 of 3: the battery's own scale
   const level = (count / 3) * 100;
 
+  const actions = (
+    <div className="flex items-center gap-3">
+      <Pill primary action={step.main} />
+      {step.more.map((a) => (
+        <Pill key={a.label} action={a} />
+      ))}
+    </div>
+  );
+
   return (
     <Frame>
       <Header theme={state.settings.theme} />
-      <main className="relative grid w-[1120px] grow grid-cols-[420px_minmax(0,1fr)] items-center gap-20 pb-[72px]">
-        <Halo level={level} />
+      {welcome || ready ? (
+        <main className="relative grid w-[1120px] grow grid-cols-[420px_minmax(0,1fr)] items-center gap-20 pb-[72px]">
+          <Halo level={level} />
+          <div className="relative flex justify-center">
+            {welcome ? (
+              <BatteryShape label="A battery that drains while you sit and refills when you move">
+                <div className="welcome-drain min-h-6 w-full rounded-[32px]" style={{ height: '62%', backgroundColor: '#FFC56B' }} />
+              </BatteryShape>
+            ) : (
+              <BatteryShape label="Battery full, setup is complete" glow>
+                <div className="w-full grow rounded-[32px] bg-[#6FCF7A]" />
+              </BatteryShape>
+            )}
+          </div>
 
-        {/* Left: the step's illustration, or the battery */}
-        <div className="relative flex justify-center">
-          {welcome ? (
-            <BatteryShape label="A battery that drains while you sit and refills when you move">
-              <div className="welcome-drain min-h-6 w-full rounded-[32px]" style={{ height: '62%', backgroundColor: '#FFC56B' }} />
-            </BatteryShape>
-          ) : ready ? (
-            <BatteryShape label="Battery full, setup is complete" glow>
-              <div className="w-full grow rounded-[32px] bg-[#6FCF7A]" />
-            </BatteryShape>
-          ) : (
-            <div className={`flex size-[380px] items-center justify-center rounded-[56px] ${step.tile}`}>
-              <img className="tile-float size-[232px]" src={step.img} alt="" />
+          <div className="relative flex flex-col gap-9">
+            <div className="flex flex-col gap-3.5">
+              {ready && <div className="text-[13px] leading-4 font-medium tracking-[0.08em] text-pos uppercase">Setup complete</div>}
+              {welcome ? (
+                <h1 className="m-0 text-[72px] leading-[76px] font-bold tracking-[-0.045em] whitespace-nowrap">
+                  Stay charged all day.
+                </h1>
+              ) : (
+                <h1 className="m-0 text-[88px] leading-[88px] font-bold tracking-[-0.045em]">All set.</h1>
+              )}
+              <div className="max-w-[560px] text-[22px] leading-[30px] font-semibold tracking-[-0.01em] text-ink-2">
+                {welcome
+                  ? 'We help you build regular, short active breaks into your workday.'
+                  : "It runs on its own whenever you're working."}
+              </div>
             </div>
-          )}
-        </div>
 
-        {/* Right: one step is the whole screen */}
-        <div className="relative flex flex-col gap-9">
-          <div className="flex flex-col gap-3.5">
-            {!welcome && (
-              <div
-                className={`text-[13px] leading-4 font-medium tracking-[0.08em] uppercase ${ready || stepDone ? 'text-pos' : 'text-ink-2'}`}
+            {welcome && (
+              <ul className="m-0 grid list-none grid-cols-3 gap-4 p-0">
+                {BENEFITS.map((b) => (
+                  <li key={b.title} className="flex flex-col gap-2.5">
+                    <span className={`flex size-14 items-center justify-center rounded-2xl ${b.tile}`}>
+                      <img src={b.img} alt="" className="size-[38px]" />
+                    </span>
+                    <span className="flex flex-col gap-0.5">
+                      <span className="text-[17px] leading-6 font-semibold">{b.title}</span>
+                      <span className="text-[15px] leading-5 text-ink-2">{b.text}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div className="flex items-center gap-3">
+              {welcome ? (
+                <>
+                  <Pill primary action={{ label: "Let's start", run: () => setProgress({ ...p, started: true }) }} />
+                  <span className="ml-2 text-[15px] leading-5 text-ink-2">Three steps to set your daily movement timer.</span>
+                </>
+              ) : (
+                <Pill
+                  primary
+                  action={state.setupDone ? { label: 'Back to micro.breaks', href: '/newtab.html' } : { label: 'Start moving', run: () => void start() }}
+                />
+              )}
+            </div>
+          </div>
+        </main>
+      ) : (
+        // One step is the whole screen: progress, a one-line headline, what to do, one way forward
+        <main className="flex w-[1040px] grow flex-col items-center justify-center gap-10 pb-14 text-center">
+          <nav aria-label={`Step ${shown + 1} of 3`} className="flex gap-1.5">
+            {[0, 1, 2].map((k) => (
+              <button
+                key={k}
+                aria-label={`Step ${k + 1}${done[k] ? ', done' : ''}`}
+                aria-current={k === shown ? 'step' : undefined}
+                className="flex h-11 w-12 cursor-pointer items-center"
+                onClick={() => setView(k)}
               >
-                {ready ? 'Setup complete' : `Step ${shown + 1} of 3${stepDone ? ' · Done' : ''}`}
-              </div>
-            )}
-            {welcome ? (
-              <h1 className="m-0 text-[72px] leading-[76px] font-bold tracking-[-0.045em] whitespace-nowrap">
-                Stay charged all day.
-              </h1>
-            ) : (
-              <h1 className="m-0 w-[551px] text-[88px] leading-[88px] font-bold tracking-[-0.045em]">
-                {ready ? 'All set.' : step.head}
-              </h1>
-            )}
-            <div className="max-w-[560px] text-[22px] leading-[30px] font-semibold tracking-[-0.01em] text-ink-2">
-              {welcome
-                ? 'We help you build regular, short active breaks into your workday.'
-                : ready
-                  ? "It runs on its own whenever you're working."
-                  : step.desc}
-            </div>
-          </div>
+                <span className={`h-1 w-full rounded-full ${k === shown ? 'bg-ink' : done[k] ? 'bg-pos' : 'bg-pill'}`} />
+              </button>
+            ))}
+          </nav>
 
-          {welcome && (
-            <ul className="m-0 grid list-none grid-cols-3 gap-4 p-0">
-              {BENEFITS.map((b) => (
-                <li key={b.title} className="flex flex-col gap-2.5">
-                  <span className={`flex size-14 items-center justify-center rounded-2xl ${b.tile}`}>
-                    <img src={b.img} alt="" className="size-[38px]" />
-                  </span>
-                  <span className="flex flex-col gap-0.5">
-                    <span className="text-[17px] leading-6 font-semibold">{b.title}</span>
-                    <span className="text-[15px] leading-5 text-ink-2">{b.text}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <div className="flex items-center gap-3">
-            {welcome ? (
-              <>
-                <Pill primary action={{ label: "Let's start", run: () => setProgress({ ...p, started: true }) }} />
-                <span className="ml-2 text-[15px] leading-5 text-ink-2">Three steps to set your daily movement timer.</span>
-              </>
-            ) : ready ? (
-              <Pill
-                primary
-                action={state.setupDone ? { label: 'Back to micro.breaks', href: '/newtab.html' } : { label: 'Start moving', run: () => void start() }}
-              />
-            ) : (
-              <>
-                <Pill primary action={step.main} />
-                {step.more.map((a) => (
-                  <Pill key={a.label} action={a} />
-                ))}
-              </>
+          <div className="flex flex-col items-center gap-4">
+            <span className={`flex size-14 items-center justify-center rounded-2xl ${step.tile}`}>
+              <img src={step.img} alt="" className="size-[38px]" />
+            </span>
+            <h1 className="m-0 text-[48px] leading-[52px] font-bold tracking-[-0.03em] whitespace-nowrap">{step.head}</h1>
+            {step.desc && (
+              <div className="max-w-[640px] text-[22px] leading-[30px] font-semibold tracking-[-0.01em] text-ink-2">{step.desc}</div>
             )}
           </div>
 
-          {/* Progress: three cells, each one opens its step */}
-          {!welcome && (
-            <div className="flex items-center gap-3.5">
-              <div className="flex gap-1.5">
-                {[0, 1, 2].map((k) => (
-                  <button
-                    key={k}
-                    aria-label={`Step ${k + 1}${done[k] ? ', done' : ''}`}
-                    aria-current={k === shown ? 'step' : undefined}
-                    className="flex h-11 w-14 cursor-pointer items-center"
-                    onClick={() => setView(k)}
-                  >
-                    <span
-                      className={`w-full rounded-full ${k === shown ? 'h-3.5' : 'h-2.5'} ${done[k] ? '' : 'bg-pill'}`}
-                      style={done[k] ? { backgroundColor: `rgb(${rgb({ level })})` } : undefined}
-                    />
-                  </button>
-                ))}
-              </div>
-              <span className="text-[15px] leading-5 font-semibold text-ink-2">{count} of 3 done</span>
-            </div>
-          )}
-        </div>
-      </main>
+          {shown === 0 && <TimerSentence settings={state.settings} size="medium" />}
+
+          {actions}
+        </main>
+      )}
       <DevBar {...engine} />
     </Frame>
   );

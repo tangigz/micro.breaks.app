@@ -19,17 +19,22 @@ test('welcome, three steps, all set, start moving', async ({ engine, home }) => 
   await shot(home, 'welcome');
   await home.getByRole('button', { name: "Let's start" }).click();
 
-  // Step 1: movement timer
-  await expect(home.getByText('Step 1 of 3')).toBeVisible();
+  // Step 1: movement timer, editable in place
+  await expect(home.getByRole('navigation', { name: 'Step 1 of 3' })).toBeVisible();
   await expect(home.getByRole('heading', { name: 'Set your movement timer.' })).toBeVisible();
-  await expect(home.getByText('Every 60 min, 9:00–18:00, every day.')).toBeVisible();
-  await expect(home.getByText('0 of 3 done')).toBeVisible();
+  await expect(home.getByText('Click any highlighted word to change it.')).toBeVisible();
   await shot(home, 'step-1');
-  await home.getByRole('button', { name: 'Keep these' }).click();
+  await home.getByRole('button', { name: 'Interval, 60 min' }).click();
+  await home.getByRole('button', { name: 'Previous value' }).click();
+  await shot(home, 'step-1-tray');
+  await home.getByRole('button', { name: 'Done', exact: true }).click();
+  await expect(home.getByRole('button', { name: 'Interval, 45 min' })).toBeVisible();
+  await home.getByRole('button', { name: 'Continue' }).click();
+  expect((await engine.send({ type: 'tick' })).settings.intervalMin).toBe(45);
 
   // Step 2: notifications, with a real test notification
   await expect(home.getByRole('heading', { name: 'Make notifications stay.' })).toBeVisible();
-  await expect(home.getByText('1 of 3 done')).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Step 1, done' })).toBeVisible();
   await home.getByRole('button', { name: 'Allow' }).click();
   await expect(home.getByText('Allowed. Now set Chrome to Alerts')).toBeVisible();
   await shot(home, 'step-2');
@@ -46,14 +51,13 @@ test('welcome, three steps, all set, start moving', async ({ engine, home }) => 
 
   // A closed tab resumes where it left off
   await home.reload();
-  await expect(home.getByText('2 of 3 done')).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Step 2, done' })).toBeVisible();
   await expect(home.getByRole('heading', { name: 'Open Chrome at login.' })).toBeVisible();
   await home.getByRole('button', { name: 'Done', exact: true }).click();
 
   // All set
   await expect(home.getByText('Setup complete')).toBeVisible();
   await expect(home.getByRole('heading', { name: 'All set.' })).toBeVisible();
-  await expect(home.getByText('3 of 3 done')).toBeVisible();
   await shot(home, 'all-set');
   expect((await engine.send({ type: 'tick' })).setupDone).toBe(false);
   await home.getByRole('button', { name: 'Start moving' }).click();
@@ -65,19 +69,21 @@ test('welcome, three steps, all set, start moving', async ({ engine, home }) => 
   expect(state.seatedSince).not.toBeNull();
 });
 
-test('a cell reopens its step', async ({ home }) => {
+test('a progress segment reopens its step', async ({ home }) => {
   await home.getByRole('button', { name: "Let's start" }).click();
-  await home.getByRole('button', { name: 'Keep these' }).click();
+  await home.getByRole('button', { name: 'Continue' }).click();
+  await expect(home.getByRole('heading', { name: 'Make notifications stay.' })).toBeVisible();
   await home.getByRole('button', { name: 'Step 1, done' }).click();
-  await expect(home.getByText('Step 1 of 3 · Done')).toBeVisible();
-  await home.getByRole('button', { name: 'Next' }).click();
+  await expect(home.getByRole('heading', { name: 'Set your movement timer.' })).toBeVisible();
+  await home.getByRole('button', { name: 'Continue' }).click();
   await expect(home.getByRole('heading', { name: 'Make notifications stay.' })).toBeVisible();
 });
 
 test('movement timer: every highlighted word is editable', async ({ engine, home }) => {
-  await home.getByRole('button', { name: "Let's start" }).click();
-  await home.getByRole('link', { name: 'Edit' }).click();
-  await expect(home).toHaveURL(/settings\.html\?from=setup$/);
+  await engine.setClock(2030, 1, 7, 10);
+  await engine.begin();
+  await home.getByRole('link', { name: /Edit your movement timer/ }).click();
+  await expect(home).toHaveURL(/settings\.html$/);
   await expect(home.getByText('Click any highlighted word to change it.')).toBeVisible();
   await shot(home, 'timer');
 
@@ -109,19 +115,7 @@ test('movement timer: every highlighted word is editable', async ({ engine, home
   const { settings } = await engine.send({ type: 'tick' });
   expect(settings).toMatchObject({ intervalMin: 45, dayStart: 8 * 60 + 30, lunchEnd: 12 * 60 + 45, days: 'weekdays' });
 
-  // Back to the welcome flow: the timer step is done and shows the new values
-  await home.getByRole('link', { name: 'Back' }).click();
-  await expect(home).toHaveURL(/setup\.html$/);
-  await expect(home.getByText('1 of 3 done')).toBeVisible();
-  await home.getByRole('button', { name: 'Step 1, done' }).click();
-  await expect(home.getByText('Every 45 min, 8:30–18:00, on weekdays.')).toBeVisible();
-});
-
-test('the new tab chip opens the movement timer, Back returns to the new tab', async ({ engine, home }) => {
-  await engine.setClock(2030, 1, 7, 10);
-  await engine.begin();
-  await home.getByRole('link', { name: /Edit your movement timer/ }).click();
-  await expect(home).toHaveURL(/settings\.html$/);
   await home.getByRole('link', { name: 'Back' }).click();
   await expect(home).toHaveURL(/newtab\.html$/);
+  await expect(home.getByText('Every 45 min · 8:30–18:00')).toBeVisible();
 });
