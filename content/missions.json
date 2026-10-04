@@ -43,8 +43,8 @@
       "tile": "green",
       "videos": [
         { "id": "xRH1To_xyr8", "start": null, "end": null },
-        { "id": "qB1eaIUrlnw", "start": null, "end": null },
-        { "id": "nFIfv-jIgbI", "start": null, "end": null }
+        { "id": "qB1eaIUrlnw", "start": 5, "end": 320 },
+        { "id": "nFIfv-jIgbI", "start": 47, "end": 310 }
       ]
     },
     {
@@ -55,7 +55,7 @@
       "tile": "lilac",
       "videos": [
         { "id": "BCUzHzpJLAI", "start": 40, "end": 170 },
-        { "id": "MU_3eoa1-X0", "start": null, "end": null }
+        { "id": "MU_3eoa1-X0", "start": 40, "end": 371 }
       ]
     }
   ]

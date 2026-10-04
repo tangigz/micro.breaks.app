@@ -406,7 +406,7 @@ describe('the break', () => {
   it('video mission: runs on the clock, one video per break, rotating, and ends with "I\'ve done the routine"', () => {
     const video = MISSIONS.find((m) => m.id === 'stretch')!;
     const sim = working();
-    const play = (videoDurationMs?: number) => {
+    const play = (videoDurationMs: number) => {
       sim.send({ type: 'start_break_now' });
       sim.state.break!.missionId = video.id;
       sim.send({ type: 'start_mission', videoDurationMs });
