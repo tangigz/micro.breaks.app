@@ -90,6 +90,21 @@ test('one screen: the battery fills as the three steps are completed', async ({ 
   expect(tracked.find((e) => e.event === 'setup_completed')!.properties).toMatchObject({ intervalMin: 45, days: 'every', calendar: false });
 });
 
+test('in a small window, the steps stay on screen with the value tray open', async ({ home }) => {
+  await home.setViewportSize({ width: 1000, height: 570 });
+  await home.getByLabel('Your email').fill('friend@example.com');
+  await home.getByRole('button', { name: "Let's start" }).click();
+  await home.getByRole('button', { name: 'End of day, 18:00' }).click();
+  // The tray takes the place of the meetings card, so the step does not grow past the window
+  await expect(home.getByRole('region', { name: 'Meetings' })).toBeHidden();
+  await expect(home.getByRole('button', { name: 'Continue' })).toBeInViewport({ ratio: 1 });
+  await expect(home.getByRole('button', { name: 'Step 3, Open Chrome at login' })).toBeInViewport({ ratio: 1 });
+  await expect(home.getByRole('img', { name: 'Setup: 0 of 3 steps done' })).toBeInViewport({ ratio: 1 });
+  await home.getByRole('button', { name: 'Done', exact: true }).click();
+  await expect(home.getByRole('region', { name: 'Meetings' })).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Continue' })).toBeInViewport({ ratio: 1 });
+});
+
 test('a done step can be reopened', async ({ home }) => {
   await home.getByLabel('Your email').fill('Friend@Example.com');
   await home.getByRole('button', { name: "Let's start" }).click();

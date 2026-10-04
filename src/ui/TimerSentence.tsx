@@ -194,8 +194,13 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
         )}
       </div>
 
-      {/* Meetings: always visible, so connecting the calendar is not hidden behind a word */}
-      <section aria-label="Meetings" className={`flex flex-col gap-3 border border-line ${look.card}`}>
+      {/* Meetings: always visible, so connecting the calendar is not hidden behind a word.
+          Inside a setup step there is no room for both: the value tray takes its place while open. */}
+      <section
+        aria-label="Meetings"
+        hidden={size === 'small' && edit != null}
+        className={`flex flex-col gap-3 border border-line ${look.card}`}
+      >
         <div className="flex items-center gap-4">
           <img src={calendar} alt="" className={`shrink-0 ${look.cardIcon}`} />
           <div className="flex min-w-0 grow flex-col gap-0.5 text-left">

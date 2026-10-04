@@ -207,8 +207,9 @@ function Setup() {
   // The open step: the first still to do, unless another one was clicked. None once everything is done.
   const open = view ?? (all ? -1 : first);
 
+  // The steps list is taller than the other screens: it needs nearly the full frame height
   return (
-    <Frame>
+    <Frame tall={!welcome}>
       <Header theme={state.settings.theme} />
       <main className="relative grid w-[1120px] grow grid-cols-[420px_minmax(0,1fr)] items-center gap-20 pb-[72px]">
         <Halo level={welcome ? 0 : level} />
