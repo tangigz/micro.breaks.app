@@ -53,9 +53,26 @@ Replaces the design's step screens (one step per screen, big pastel tile, 88 px 
 
 ## After the first real install (4 October 2026)
 
-- **Connecting the calendar is a visible card**, "Skip my meetings", always shown under the timer sentence, in the setup step and on the movement timer screen. It replaces the "meetings" word in the sentence, which did not look clickable. Once connected, the sentence ends "…or during my Google meetings."
+- **Connecting the calendar is a visible card**, "Protect my meetings" ("You will never be prompted during your meetings."), always shown under the timer sentence, in the setup step and on the movement timer screen. It replaces the "meetings" word in the sentence, which did not look clickable. Once connected, the sentence ends "…or during my Google meetings."
 - **The timer chip stays on "Done for today." and "Weekend."**, so the settings are always one click away. The design hid it there.
 - The build your own Chrome runs is a copy in `~/Developer/micro.breaks-extension`, refreshed on request, so work in the project does not change it.
+
+## Test phase with friends: identity and analytics (4 October 2026)
+
+- **No accounts.** Each install gets a random ID. The welcome screen asks for an email, required to start, which is attached to that ID so the author can tell testers apart.
+- **Usage events go to PostHog** through its HTTP API, from the background (`src/background/analytics.ts`). No SDK. Events are queued in storage and sent in batches, so nothing is lost offline. Nothing is sent from dev builds or while `POSTHOG_KEY` in `src/config.ts` is empty.
+- **What is sent, a shortlist of eight events:** `extension_installed`, `setup_step_done`, `setup_completed`, `mission_started`, `mission_completed`, `skip_challenge_shown`, `skip_passed`, `setting_changed` (theme changes left out). Each carries the extension version. Everything else the engine logs stays in the local event log. Never tabs, URLs or calendar content.
+- `seated_streak_ended` (`seatedMin`, `endedBy`) is logged locally whenever the seated timer restarts or stops, but is **not** on the shortlist. The "longest seated streak ≤ 60 min" goal can't be read from PostHog; neither can prompts that were ignored or walked away from.
+- The PostHog project is in the EU region.
+- The README says what is shared. The welcome screen only asks for the email; the explanation there was removed.
+
+## Timer values are changed in place (4 October 2026)
+
+Replaces the design's tray of five values under the sentence, on the setup step and on the movement timer screen.
+
+- Scrolling over a highlighted word changes it. Clicking it shows a previous and a next arrow inside the word; the arrow keys work too. Enter, Escape or a click elsewhere puts it back to rest.
+- Reason: in the setup step the tray made the step taller than a small window. Shrinking the screen to fit was rejected; the layout must stay as large as the window allows.
+- The steps screen was tightened instead (no subtitle until "All set.", smaller gaps), so it fits at the same scale as every other screen.
 
 ## Smaller rules, agreed as defaults
 

@@ -5,6 +5,7 @@ import type { Message } from '@/data/client';
 import { advanceClock, clockNow, toRealTime } from '@/data/clock';
 import { db } from '@/data/db';
 import { loadState, saveState } from '@/data/store';
+import { flushSoon, track } from './analytics';
 import { CALENDAR_ALARM, connectCalendar, disconnectCalendar, refreshCalendar, savedBusy } from './calendar';
 import { clearNotification, notify } from './notifications';
 import { HOME, MISSION, SETUP, show } from './tabs';
@@ -26,6 +27,10 @@ async function execute(effect: Effect, now: number): Promise<void> {
   switch (effect.type) {
     case 'log':
       await db.events.add({ ts: now, day: dayKey(now), type: effect.event, payload: effect.payload });
+      // The theme is not usage worth counting
+      if (!(effect.event === 'setting_changed' && effect.payload && 'theme' in effect.payload)) {
+        track(effect.event, effect.payload, now);
+      }
       break;
     case 'notify':
       await notify(effect.kind, effect.seatedMin);
@@ -151,14 +156,16 @@ async function advance(ms: number): Promise<State> {
 
 export function start(): void {
   browser.runtime.onInstalled.addListener(({ reason }) => {
-    if (reason === 'install') void show(SETUP);
+    if (reason !== 'install') return;
+    track('extension_installed');
+    void show(SETUP);
   });
 
   browser.runtime.onStartup.addListener(() => void dispatch({ type: 'startup' }));
 
   browser.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === CALENDAR_ALARM) void pollCalendar();
-    else void dispatch({ type: 'tick' });
+    else void dispatch({ type: 'tick' }).then(flushSoon);
   });
 
   browser.idle.onStateChanged.addListener((idle) => {
@@ -192,6 +199,7 @@ export function start(): void {
     if (message?.mb === 'dispatch') void dispatch(message.input).then(respond);
     else if (message?.mb === 'dev_advance') void advance(message.ms).then(respond);
     else if (message?.mb === 'calendar') void setCalendar(message.connect).then((error) => respond({ error }));
+    else if (message?.mb === 'track') void clockNow().then((now) => respond(track(message.event, message.properties, now)));
     else return;
     return true;
   });

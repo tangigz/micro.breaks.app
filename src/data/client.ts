@@ -7,7 +7,13 @@ import { STATE_KEY } from './store';
 export type Message =
   | { mb: 'dispatch'; input: Input }
   | { mb: 'dev_advance'; ms: number }
-  | { mb: 'calendar'; connect: boolean };
+  | { mb: 'calendar'; connect: boolean }
+  | { mb: 'track'; event: string; properties?: Record<string, unknown> };
+
+/** Records a usage event that the engine does not know about (the welcome flow). */
+export function track(event: string, properties?: Record<string, unknown>): void {
+  void browser.runtime.sendMessage({ mb: 'track', event, properties } satisfies Message);
+}
 
 /** Connects or disconnects Google Calendar. Resolves with an error message to show, if any. */
 export async function setCalendar(connect: boolean): Promise<string | undefined> {

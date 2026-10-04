@@ -40,7 +40,13 @@ test('a full cycle: heads-up, prompt, mission, recharged', async ({ context, eng
     'prompt_shown',
     'mission_started',
     'mission_completed',
+    'seated_streak_ended',
   ]);
+
+  // Only the shortlist is queued for PostHog; the rest stays in the local log
+  const tracked = await engine.tracked();
+  expect(tracked.map((e) => e.event)).toEqual(['extension_installed', 'setting_changed', 'mission_started', 'mission_completed']);
+  expect(tracked.every((e) => typeof e.properties.version === 'string')).toBe(true);
 });
 
 test('the state survives the service worker stopping', async ({ context, engine, home }) => {
