@@ -43,10 +43,28 @@ function options(field: Field, s: Settings): number[] {
 const show = (field: Field, value: number) => (field === 'intervalMin' ? `${value} min` : timeOfDay(value));
 
 const SIZES = {
-  /** The movement timer screen: the sentence is the whole page. */
-  large: { text: 'text-[44px] leading-[72px]', token: 'rounded-[14px] px-3.5 leading-[56px]' },
-  /** Inside the welcome flow, under a headline. */
-  medium: { text: 'text-[32px] leading-[54px]', token: 'rounded-xl px-3 leading-[42px]' },
+  /** The movement timer screen: the sentence is the whole page, centred. */
+  large: {
+    wrap: 'items-center gap-8',
+    text: 'text-center text-[44px] leading-[72px]',
+    token: 'rounded-[14px] px-3.5 leading-[56px]',
+    tray: 'w-[880px] gap-4 rounded-panel px-6 py-5',
+    hold: 'min-h-[124px] items-center',
+    cell: 'h-14 rounded-[14px]',
+    values: ['text-[28px] font-bold', 'text-[22px] font-medium', 'text-[18px] font-medium'],
+    hint: 'text-center',
+  },
+  /** Inside a setup step: left-aligned, in a 570 px column. */
+  small: {
+    wrap: 'items-start gap-4',
+    text: 'text-[24px] leading-[44px]',
+    token: 'rounded-[10px] px-2.5 leading-[34px]',
+    tray: 'w-full gap-3 rounded-[20px] bg-band px-4 py-4',
+    hold: 'items-start',
+    cell: 'h-11 rounded-xl',
+    values: ['text-[18px] font-bold', 'text-[15px] font-medium', 'text-[13px] font-medium'],
+    hint: '',
+  },
 };
 
 /** The movement timer as one sentence. Every highlighted word opens a tray of values under it. */
@@ -97,8 +115,8 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
   const days = settings.days === 'every' ? 'every day' : 'on weekdays';
 
   return (
-    <div className="flex w-full flex-col items-center gap-8">
-      <p className={`m-0 text-center font-bold tracking-[-0.02em] text-ink-2 ${look.text}`}>
+    <div className={`flex w-full flex-col ${look.wrap}`}>
+      <p className={`m-0 font-bold tracking-[-0.02em] text-ink-2 ${look.text}`}>
         Remind me to move every {token('intervalMin')}, from {token('dayStart')} to {token('dayEnd')},{' '}
         <button
           aria-label={`Days, ${days}. Switch`}
@@ -111,11 +129,11 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
       </p>
 
       {/* Tray under the sentence */}
-      <div className="flex min-h-[124px] w-full flex-col items-center">
+      <div className={`flex w-full flex-col ${look.hold}`}>
         {edit ? (
           <section
             aria-label={TITLES[edit]}
-            className="flex w-[880px] flex-col gap-4 rounded-panel border border-line bg-raised px-6 py-5"
+            className={`flex flex-col border border-line bg-raised ${look.tray}`}
             onWheel={(e) => {
               scrolled.current += e.deltaY + e.deltaX;
               if (Math.abs(scrolled.current) >= 40) {
@@ -129,19 +147,18 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
               <span className="text-[13px] leading-4 font-medium text-ink-2">Scroll or ← →</span>
             </div>
             <div className="flex items-center gap-2">
-              <Arrow label="Previous value" d="m15 18-6-6 6-6" onClick={() => pick(index - 1)} />
+              <Arrow label="Previous value" d="m15 18-6-6 6-6" cell={look.cell} onClick={() => pick(index - 1)} />
               <div role="listbox" aria-label={TITLES[edit]} className="grid grow grid-cols-5 gap-1">
                 {[-2, -1, 0, 1, 2].map((d) => {
                   const value = values[index + d];
-                  const text =
-                    d === 0 ? 'text-[28px] font-bold' : Math.abs(d) === 1 ? 'text-[22px] font-medium' : 'text-[18px] font-medium';
+                  const text = look.values[Math.abs(d)]!;
                   return (
                     <button
                       key={d}
                       role="option"
                       aria-selected={d === 0}
                       disabled={value == null}
-                      className={`h-14 rounded-[14px] ${text} ${d === 0 ? 'bg-pill text-ink' : 'text-ink-2'} ${value == null ? '' : 'cursor-pointer'}`}
+                      className={`whitespace-nowrap ${look.cell} ${text} ${d === 0 ? 'bg-pill text-ink' : 'text-ink-2'} ${value == null ? '' : 'cursor-pointer'}`}
                       onClick={() => pick(index + d)}
                     >
                       {value == null ? '' : show(edit, value)}
@@ -149,9 +166,9 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
                   );
                 })}
               </div>
-              <Arrow label="Next value" d="m9 18 6-6-6-6" onClick={() => pick(index + 1)} />
+              <Arrow label="Next value" d="m9 18 6-6-6-6" cell={look.cell} onClick={() => pick(index + 1)} />
               <button
-                className="h-14 shrink-0 cursor-pointer rounded-[14px] bg-ink px-7 text-[15px] font-semibold text-on-ink"
+                className={`shrink-0 cursor-pointer bg-ink px-6 text-[15px] font-semibold text-on-ink ${look.cell}`}
                 onClick={() => setEdit(null)}
               >
                 Done
@@ -159,18 +176,18 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
             </div>
           </section>
         ) : (
-          <div className="text-center text-[15px] leading-5 text-ink-2">Click any highlighted word to change it.</div>
+          <div className={`text-[15px] leading-5 text-ink-2 ${look.hint}`}>Click any highlighted word to change it.</div>
         )}
       </div>
     </div>
   );
 }
 
-function Arrow({ label, d, onClick }: { label: string; d: string; onClick: () => void }) {
+function Arrow({ label, d, cell, onClick }: { label: string; d: string; cell: string; onClick: () => void }) {
   return (
     <button
       aria-label={label}
-      className="flex h-14 w-12 shrink-0 cursor-pointer items-center justify-center rounded-[14px] bg-pill"
+      className={`flex w-11 shrink-0 cursor-pointer items-center justify-center bg-pill ${cell}`}
       onClick={onClick}
     >
       <svg

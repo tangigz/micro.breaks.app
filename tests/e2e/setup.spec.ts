@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from './extension';
 
 async function shot(page: Page, name: string) {
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(1300);
   await page.screenshot({ path: `test-results/setup/${name}.png` });
 }
 
@@ -12,52 +12,52 @@ test('install opens the welcome flow, and every new tab leads to it until it is 
   expect(context.pages().filter((p) => p.url().endsWith('/setup.html')).length).toBeGreaterThanOrEqual(1);
 });
 
-test('welcome, three steps, all set, start moving', async ({ engine, home }) => {
+test('one screen: the battery fills as the three steps are completed', async ({ engine, home }) => {
   await engine.setClock(2030, 1, 7, 10);
   await expect(home.getByText('More energy')).toBeVisible();
-  await expect(home.getByText('Three steps to set your daily movement timer.')).toBeVisible();
   await shot(home, 'welcome');
   await home.getByRole('button', { name: "Let's start" }).click();
 
-  // Step 1: movement timer, editable in place
-  await expect(home.getByRole('navigation', { name: 'Step 1 of 3' })).toBeVisible();
-  await expect(home.getByRole('heading', { name: 'Set your movement timer.' })).toBeVisible();
-  await expect(home.getByText('Click any highlighted word to change it.')).toBeVisible();
-  await shot(home, 'step-1');
+  // Step 1 is open: the movement timer, editable in place
+  await expect(home.getByRole('heading', { name: 'Charge your battery.' })).toBeVisible();
+  await expect(home.getByRole('img', { name: 'Setup: 0 of 3 steps done' })).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Step 1, Set your movement timer' })).toHaveAttribute('aria-expanded', 'true');
+  await expect(home.getByRole('button', { name: 'Step 2, Make notifications stay' })).toHaveAttribute('aria-expanded', 'false');
+  await shot(home, 'steps-0');
   await home.getByRole('button', { name: 'Interval, 60 min' }).click();
   await home.getByRole('button', { name: 'Previous value' }).click();
-  await shot(home, 'step-1-tray');
+  await shot(home, 'steps-0-tray');
   await home.getByRole('button', { name: 'Done', exact: true }).click();
   await expect(home.getByRole('button', { name: 'Interval, 45 min' })).toBeVisible();
   await home.getByRole('button', { name: 'Continue' }).click();
   expect((await engine.send({ type: 'tick' })).settings.intervalMin).toBe(45);
 
-  // Step 2: notifications, with a real test notification
-  await expect(home.getByRole('heading', { name: 'Make notifications stay.' })).toBeVisible();
-  await expect(home.getByRole('button', { name: 'Step 1, done' })).toBeVisible();
+  // Step 2 opens by itself: notifications, with a real test notification
+  await expect(home.getByRole('img', { name: 'Setup: 1 of 3 steps done' })).toBeVisible();
+  await expect(home.getByText('Every 45 min, 9:00–18:00, every day.')).toBeVisible();
   await home.getByRole('button', { name: 'Allow' }).click();
   await expect(home.getByText('Allowed. Now set Chrome to Alerts')).toBeVisible();
-  await shot(home, 'step-2');
+  await shot(home, 'steps-1');
   await home.getByRole('button', { name: 'Send a test' }).click();
   await expect(home.getByText('Did the test stay on screen until you closed it?')).toBeVisible();
   await expect.poll(() => engine.notifications()).toEqual(['test']);
   await home.getByRole('button', { name: 'Yes, it stayed' }).click();
 
   // Step 3: Chrome at login
-  await expect(home.getByRole('heading', { name: 'Open Chrome at login.' })).toBeVisible();
+  await expect(home.getByRole('img', { name: 'Setup: 2 of 3 steps done' })).toBeVisible();
   await home.getByRole('button', { name: 'Show me how' }).click();
   await expect(home.getByText('System Settings › General › Login Items › “+” › Google Chrome.')).toBeVisible();
-  await shot(home, 'step-3-how');
+  await shot(home, 'steps-2');
 
   // A closed tab resumes where it left off
   await home.reload();
-  await expect(home.getByRole('button', { name: 'Step 2, done' })).toBeVisible();
-  await expect(home.getByRole('heading', { name: 'Open Chrome at login.' })).toBeVisible();
+  await expect(home.getByRole('img', { name: 'Setup: 2 of 3 steps done' })).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Show me how' })).toBeVisible();
   await home.getByRole('button', { name: 'Done', exact: true }).click();
 
-  // All set
-  await expect(home.getByText('Setup complete')).toBeVisible();
+  // All set: full battery, same screen
   await expect(home.getByRole('heading', { name: 'All set.' })).toBeVisible();
+  await expect(home.getByRole('img', { name: 'Setup: 3 of 3 steps done' })).toBeVisible();
   await shot(home, 'all-set');
   expect((await engine.send({ type: 'tick' })).setupDone).toBe(false);
   await home.getByRole('button', { name: 'Start moving' }).click();
@@ -69,14 +69,15 @@ test('welcome, three steps, all set, start moving', async ({ engine, home }) => 
   expect(state.seatedSince).not.toBeNull();
 });
 
-test('a progress segment reopens its step', async ({ home }) => {
+test('a done step can be reopened', async ({ home }) => {
   await home.getByRole('button', { name: "Let's start" }).click();
   await home.getByRole('button', { name: 'Continue' }).click();
-  await expect(home.getByRole('heading', { name: 'Make notifications stay.' })).toBeVisible();
-  await home.getByRole('button', { name: 'Step 1, done' }).click();
-  await expect(home.getByRole('heading', { name: 'Set your movement timer.' })).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Allow' })).toBeVisible();
+  await home.getByRole('button', { name: 'Step 1, Set your movement timer, done' }).click();
+  await expect(home.getByRole('button', { name: 'Interval, 60 min' })).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Allow' })).toHaveCount(0);
   await home.getByRole('button', { name: 'Continue' }).click();
-  await expect(home.getByRole('heading', { name: 'Make notifications stay.' })).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Allow' })).toBeVisible();
 });
 
 test('movement timer: every highlighted word is editable', async ({ engine, home }) => {

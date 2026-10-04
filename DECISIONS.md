@@ -20,14 +20,15 @@ Decisions taken after `docs/spec.html` (v3, 3 October 2026). Where they differ f
 - "Sharper focus": "Until the work is done."
 - Button: "Let's start". Next to it: "Three steps to set your daily movement timer."
 
-## Setup steps layout (4 October 2026)
+## Setup on one screen (4 October 2026)
 
-Replaces the design's step screens (big pastel tile on the left, 88 px headline on three lines, progress cells with "N of 3 done").
+Replaces the design's step screens (one step per screen, big pastel tile, 88 px headline on three lines, progress cells).
 
-- Centred, like the movement timer screen. No "STEP 1 OF 3" eyebrow.
-- Progress is three thin segments at the top: white for the current step, green for done. Each one opens its step.
-- A small 56 px illustration tile, then the headline on one line at 48 px.
+- After the welcome screen, the three steps sit on one screen: the battery on the left, the steps as a list on the right.
+- The battery fills as steps are completed: empty and coral at 0 of 3, amber, full and green at 3 of 3.
+- One step is open at a time, the first still to do. A done step shows a green tick and a one-line summary, and can be reopened.
 - Step 1 holds the editable timer sentence itself. One button, "Continue". No "Keep these" / "Edit".
+- Headline "Charge your battery." / "Three steps and micro.breaks is ready.", then "All set." with Start moving on the same screen.
 
 ## Smaller rules, agreed as defaults
 
