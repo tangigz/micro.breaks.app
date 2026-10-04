@@ -19,7 +19,8 @@ Chrome MV3 extension (WXT, React, TypeScript, Tailwind). A battery on every new 
 
 ## Commands
 
-- `npm run dev` — Chrome with hot reload
+- `npm run dev` — opens the test browser (Chrome for Testing, profile in `.dev-profile`) with hot reload and the Test mode bar
+- `npm run pr -- <number>` — checks out a pull request and opens it in the test browser
 - `npm run build` — unpacked build in `.output/chrome-mv3`
 - `npm test` — Vitest (rules engine)
 - `npm run e2e` — builds, then runs the extension in Chromium with Playwright

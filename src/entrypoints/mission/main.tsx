@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { mission, missionView } from '@/engine';
 import { send, useEngine } from '@/data/client';
+import { DevBar } from '@/ui/DevBar';
 import '@/ui/tokens.css';
 
 /** Placeholder until the prompt (#6) and the mission timer (#7) are designed in. */
@@ -31,6 +32,7 @@ function Mission() {
           Start mission
         </button>
       )}
+      <DevBar state={state} now={now} />
     </main>
   );
 }
