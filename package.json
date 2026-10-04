@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "postinstall": "wxt prepare",
-    "e2e": "wxt build && playwright test"
+    "e2e": "wxt build && playwright test",
+    "pr": "sh scripts/pr.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
@@ -24,6 +25,7 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3",
+    "web-ext": "^10.7.0",
     "wxt": "^0.21.4"
   },
   "dependencies": {
