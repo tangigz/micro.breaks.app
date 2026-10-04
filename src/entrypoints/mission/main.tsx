@@ -11,11 +11,9 @@ import { mount } from '@/ui/mount';
 import '@/ui/tokens.css';
 import { Prompt } from './Prompt';
 import { Running } from './Running';
+import { Skip, Skipped } from './Skip';
 
 applySavedTheme();
-
-const headline = 'm-0 text-[104px] leading-[100px] font-bold tracking-[-0.045em]';
-const primary = 'h-14 w-fit cursor-pointer rounded-full bg-ink px-9 text-[17px] font-semibold text-on-ink';
 
 /** Back to work: this tab has done its job. Close it, unless it is the only one in the window. */
 async function backToWork(): Promise<void> {
@@ -67,24 +65,13 @@ function Mission() {
       </Header>
 
       {b?.skip ? (
-        // Placeholder until the skip challenge (#8) is designed in
-        <main className="relative flex w-[1120px] grow flex-col justify-center gap-6 pb-14">
-          <h1 className={headline}>Skipping costs more than moving.</h1>
-          <button className={primary} onClick={() => void send({ type: 'skip_cancel' })}>
-            Fine, I'll do the mission
-          </button>
-        </main>
+        <Skip c={b.skip} />
       ) : b && prompt ? (
         <Prompt state={state} b={b} />
       ) : b && timer ? (
         <Running b={b} timer={timer} />
       ) : outcome?.kind === 'skipped' ? (
-        <main className="relative flex w-[1120px] grow flex-col justify-center gap-6 pb-14">
-          <h1 className={headline}>Skipped.</h1>
-          <button className={primary} onClick={done}>
-            Back to work
-          </button>
-        </main>
+        <Skipped state={state} onDone={done} />
       ) : outcome ? (
         <Recharged eyebrow={rechargedEyebrow(outcome.kind)} onDone={done} />
       ) : null}
