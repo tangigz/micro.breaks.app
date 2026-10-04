@@ -3,7 +3,9 @@ import { expect, test } from './extension';
 
 const missionPage = async (context: BrowserContext): Promise<Page> => {
   await expect.poll(() => context.pages().some((p) => p.url().endsWith('/mission.html'))).toBe(true);
-  return context.pages().find((p) => p.url().endsWith('/mission.html'))!;
+  // Drawing a mission opens and cancels breaks: let earlier mission tabs finish leaving, then take the live one
+  await new Promise((r) => setTimeout(r, 600));
+  return context.pages().filter((p) => p.url().endsWith('/mission.html')).at(-1)!;
 };
 
 const shot = (page: Page, name: string) => page.screenshot({ path: `test-results/mission/${name}.png` });

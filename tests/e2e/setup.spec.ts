@@ -29,10 +29,10 @@ test('one screen: the battery fills as the three steps are completed', async ({ 
   await expect(home.getByRole('button', { name: 'Step 1, Set your movement timer' })).toHaveAttribute('aria-expanded', 'true');
   await expect(home.getByRole('button', { name: 'Step 2, Make notifications stay' })).toHaveAttribute('aria-expanded', 'false');
   await shot(home, 'steps-0');
+  // A highlighted word is changed in place, with its own arrows
   await home.getByRole('button', { name: 'Interval, 60 min' }).click();
   await home.getByRole('button', { name: 'Previous value' }).click();
-  await shot(home, 'steps-0-tray');
-  await home.getByRole('button', { name: 'Done', exact: true }).click();
+  await shot(home, 'steps-0-editing');
   await expect(home.getByRole('button', { name: 'Interval, 45 min' })).toBeVisible();
   await home.getByRole('button', { name: 'Continue' }).click();
   expect((await engine.send({ type: 'tick' })).settings.intervalMin).toBe(45);
@@ -65,6 +65,8 @@ test('one screen: the battery fills as the three steps are completed', async ({ 
   await expect(home.getByRole('img', { name: 'Setup: 3 of 3 steps done' })).toBeVisible();
   await shot(home, 'all-set');
   expect((await engine.send({ type: 'tick' })).setupDone).toBe(false);
+  // Whatever this machine's real idle state was when the browser started, the tester is at the keyboard
+  await engine.send({ type: 'idle', state: 'active' });
   await home.getByRole('button', { name: 'Start moving' }).click();
 
   await expect(home).toHaveURL(/newtab\.html$/);
@@ -90,19 +92,19 @@ test('one screen: the battery fills as the three steps are completed', async ({ 
   expect(tracked.find((e) => e.event === 'setup_completed')!.properties).toMatchObject({ intervalMin: 45, days: 'every', calendar: false });
 });
 
-test('in a small window, the steps stay on screen with the value tray open', async ({ home }) => {
+test('in a small window, the steps stay on screen, at the same scale as the other screens', async ({ home }) => {
   await home.setViewportSize({ width: 1000, height: 570 });
   await home.getByLabel('Your email').fill('friend@example.com');
   await home.getByRole('button', { name: "Let's start" }).click();
   await home.getByRole('button', { name: 'End of day, 18:00' }).click();
-  // The tray takes the place of the meetings card, so the step does not grow past the window
-  await expect(home.getByRole('region', { name: 'Meetings' })).toBeHidden();
+  await expect(home.getByRole('button', { name: 'Next value' })).toBeVisible();
+  // Nothing is pushed off screen, and the meetings card stays
+  await expect(home.getByRole('region', { name: 'Meetings' })).toBeInViewport({ ratio: 1 });
   await expect(home.getByRole('button', { name: 'Continue' })).toBeInViewport({ ratio: 1 });
   await expect(home.getByRole('button', { name: 'Step 3, Open Chrome at login' })).toBeInViewport({ ratio: 1 });
   await expect(home.getByRole('img', { name: 'Setup: 0 of 3 steps done' })).toBeInViewport({ ratio: 1 });
-  await home.getByRole('button', { name: 'Done', exact: true }).click();
-  await expect(home.getByRole('region', { name: 'Meetings' })).toBeVisible();
-  await expect(home.getByRole('button', { name: 'Continue' })).toBeInViewport({ ratio: 1 });
+  // Not shrunk to fit: the scale only depends on the window, 570 / 720
+  expect(await home.evaluate(() => Number((document.querySelector('#root > div') as HTMLElement).style.zoom))).toBeCloseTo(0.79, 2);
 });
 
 test('a done step can be reopened', async ({ home }) => {
@@ -122,26 +124,41 @@ test('movement timer: every highlighted word is editable', async ({ engine, home
   await engine.begin();
   await home.getByRole('link', { name: /Edit your movement timer/ }).click();
   await expect(home).toHaveURL(/settings\.html$/);
-  await expect(home.getByText('Click any highlighted word to change it.')).toBeVisible();
+  await expect(home.getByText('Scroll over a highlighted word, or click it, to change it.')).toBeVisible();
   await shot(home, 'timer');
 
-  // Interval, with the arrows of the tray
+  // Interval, with the word's own arrows
   await home.getByRole('button', { name: 'Interval, 60 min' }).click();
-  await expect(home.getByRole('option', { selected: true })).toHaveText('60 min');
-  await shot(home, 'timer-tray');
+  await expect(home.getByText('Scroll, or use the arrows.')).toBeVisible();
+  await shot(home, 'timer-editing');
   await home.getByRole('button', { name: 'Previous value' }).click();
   await expect(home.getByRole('button', { name: 'Interval, 45 min' })).toBeVisible();
-  await home.getByRole('button', { name: 'Done', exact: true }).click();
+  // At the first value the arrow stops
+  await home.getByRole('button', { name: 'Previous value' }).click();
+  await expect(home.getByRole('button', { name: 'Interval, 30 min' })).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Previous value' })).toBeDisabled();
+  await home.getByRole('button', { name: 'Next value' }).click();
+  // A click elsewhere puts the word back to rest
+  await home.getByText('Your movement timer').click();
+  await expect(home.getByRole('button', { name: 'Previous value' })).toHaveCount(0);
+  await expect(home.getByRole('button', { name: 'Interval, 45 min' })).toBeVisible();
 
   // Start of day, with the keyboard
   await home.getByRole('button', { name: 'Start of day, 9:00' }).click();
   await home.keyboard.press('ArrowLeft');
-  await home.keyboard.press('ArrowLeft');
+  await home.keyboard.press('ArrowDown');
   await expect(home.getByRole('button', { name: 'Start of day, 8:30' })).toBeVisible();
   await home.keyboard.press('Enter');
-  await expect(home.getByText('Click any highlighted word to change it.')).toBeVisible();
+  await expect(home.getByText('Scroll over a highlighted word, or click it, to change it.')).toBeVisible();
 
-  // Lunch can't end before it starts: the tray stops at the first value after 12:30
+  // End of day, by scrolling over the word without clicking it
+  await home.getByRole('button', { name: 'End of day, 18:00' }).hover();
+  await home.mouse.wheel(0, 50);
+  await expect(home.getByRole('button', { name: 'End of day, 18:15' })).toBeVisible();
+  await home.mouse.wheel(0, -50);
+  await expect(home.getByRole('button', { name: 'End of day, 18:00' })).toBeVisible();
+
+  // Lunch can't end before it starts: it stops at the first value after 12:30
   await home.getByRole('button', { name: 'Lunch ends, 13:30' }).click();
   for (let i = 0; i < 10; i++) await home.keyboard.press('ArrowLeft');
   await expect(home.getByRole('button', { name: 'Lunch ends, 12:45' })).toBeVisible();

@@ -6,14 +6,6 @@ import { timeOfDay } from './format';
 
 type Field = 'intervalMin' | 'dayStart' | 'dayEnd' | 'lunchStart' | 'lunchEnd';
 
-const TITLES: Record<Field, string> = {
-  intervalMin: 'Remind me every',
-  dayStart: 'Start of your day',
-  dayEnd: 'End of your day',
-  lunchStart: 'Lunch starts',
-  lunchEnd: 'Lunch ends',
-};
-
 const LABELS: Record<Field, string> = {
   intervalMin: 'Interval',
   dayStart: 'Start of day',
@@ -48,31 +40,30 @@ const SIZES = {
   large: {
     wrap: 'items-center gap-8',
     text: 'text-center text-[44px] leading-[72px]',
-    token: 'rounded-[14px] px-3.5 leading-[56px]',
-    tray: 'w-[880px] gap-4 rounded-panel px-6 py-5',
-    hold: 'min-h-[124px] items-center',
-    cell: 'h-14 rounded-[14px]',
-    values: ['text-[28px] font-bold', 'text-[22px] font-medium', 'text-[18px] font-medium'],
+    token: 'rounded-[14px] leading-[56px]',
+    value: 'px-3.5',
+    arrow: 'w-9',
     hint: 'text-center',
     card: 'w-[880px] rounded-panel bg-raised px-6 py-5',
     cardIcon: 'size-14',
   },
-  /** Inside a setup step: left-aligned, in a 570 px column. */
+  /** Inside a setup step: left-aligned, in a narrower column. */
   small: {
     wrap: 'items-start gap-4',
-    text: 'text-[24px] leading-[44px]',
-    token: 'rounded-[10px] px-2.5 leading-[34px]',
-    tray: 'w-full gap-3 rounded-[20px] bg-band px-4 py-4',
-    hold: 'items-start',
-    cell: 'h-11 rounded-xl',
-    values: ['text-[18px] font-bold', 'text-[15px] font-medium', 'text-[13px] font-medium'],
+    text: 'text-[24px] leading-[42px]',
+    token: 'rounded-[10px] leading-[34px]',
+    value: 'px-2.5',
+    arrow: 'w-6',
     hint: '',
     card: 'w-full rounded-[20px] bg-band px-4 py-3.5',
     cardIcon: 'size-10',
   },
 };
 
-/** The movement timer as one sentence. Every highlighted word opens a tray of values under it. */
+/**
+ * The movement timer as one sentence. Every highlighted word is changed in place: scroll over it,
+ * or click it and use its arrows or the arrow keys.
+ */
 export function TimerSentence({ settings: saved, size = 'large' }: { settings: Settings; size?: keyof typeof SIZES }) {
   const [edit, setEdit] = useState<Field | null>(null);
   const [calendarError, setCalendarError] = useState<string>();
@@ -87,38 +78,66 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
     setPicked((p) => ({ ...p, ...patch }));
     void send({ type: 'settings', patch });
   };
-  const values = edit ? options(edit, settings) : [];
-  const index = edit ? values.indexOf(settings[edit]) : -1;
-  const pick = (i: number) => {
-    const value = values[Math.max(0, Math.min(values.length - 1, i))];
-    if (edit && value != null && value !== settings[edit]) change({ [edit]: value });
+  /** Moves a field to its previous or next allowed value. */
+  const step = (field: Field, by: number) => {
+    const values = options(field, settings);
+    const value = values[Math.max(0, Math.min(values.length - 1, values.indexOf(settings[field]) + by))];
+    if (value != null && value !== settings[field]) change({ [field]: value });
   };
-  const move = useRef<(by: number) => void>(() => {});
-  move.current = (by) => pick(index + by);
+  const move = useRef(step);
+  move.current = step;
 
   useEffect(() => {
     if (!edit) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') move.current(-1);
-      else if (e.key === 'ArrowRight') move.current(1);
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') move.current(edit, -1);
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') move.current(edit, 1);
       else if (e.key === 'Enter' || e.key === 'Escape') setEdit(null);
       else return;
       e.preventDefault();
     };
+    // A click anywhere else puts the word back to rest
+    const onDown = (e: MouseEvent) => {
+      if (!(e.target as Element).closest?.('[data-token]')) setEdit(null);
+    };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onDown);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onDown);
+    };
   }, [edit]);
 
-  const token = (field: Field) => (
-    <button
-      aria-label={`${LABELS[field]}, ${show(field, settings[field])}`}
-      aria-expanded={edit === field}
-      className={`cursor-pointer ${look.token} ${edit === field ? 'bg-ink text-on-ink' : 'bg-pill text-ink'}`}
-      onClick={() => setEdit(edit === field ? null : field)}
-    >
-      {show(field, settings[field])}
-    </button>
-  );
+  const token = (field: Field) => {
+    const on = edit === field;
+    const values = options(field, settings);
+    const index = values.indexOf(settings[field]);
+    return (
+      <span
+        data-token
+        className={`inline-flex items-center align-top ${size === 'large' ? 'mt-2' : 'mt-1'} ${look.token} ${on ? 'bg-ink text-on-ink' : 'bg-pill text-ink'}`}
+        onWheel={(e) => {
+          scrolled.current += e.deltaY + e.deltaX;
+          if (Math.abs(scrolled.current) < 40) return;
+          step(field, scrolled.current > 0 ? 1 : -1);
+          scrolled.current = 0;
+        }}
+      >
+        {on && <Arrow label="Previous value" d="m15 18-6-6 6-6" width={look.arrow} disabled={index <= 0} onClick={() => step(field, -1)} />}
+        <button
+          aria-label={`${LABELS[field]}, ${show(field, settings[field])}`}
+          aria-expanded={on}
+          className={`cursor-pointer rounded-[inherit] ${on ? '' : look.value}`}
+          onClick={() => setEdit(on ? null : field)}
+        >
+          {show(field, settings[field])}
+        </button>
+        {on && (
+          <Arrow label="Next value" d="m9 18 6-6-6-6" width={look.arrow} disabled={index >= values.length - 1} onClick={() => step(field, 1)} />
+        )}
+      </span>
+    );
+  };
   const days = settings.days === 'every' ? 'every day' : 'on weekdays';
   const toggleCalendar = async (connect: boolean) => {
     setBusy(true);
@@ -132,75 +151,26 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
         Remind me to move every {token('intervalMin')}, from {token('dayStart')} to {token('dayEnd')},{' '}
         <button
           aria-label={`Days, ${days}. Switch`}
-          className={`cursor-pointer bg-pill text-ink ${look.token}`}
+          className={`inline-flex cursor-pointer items-center bg-pill align-top text-ink ${size === 'large' ? 'mt-2' : 'mt-1'} ${look.token} ${look.value}`}
           onClick={() => change({ days: settings.days === 'every' ? 'weekdays' : 'every' })}
         >
           {days}
         </button>
         . Not during lunch, from {token('lunchStart')} to {token('lunchEnd')}
-        {saved.calendar && <>, or during <span className="text-ink">my Google meetings</span></>}
+        {saved.calendar && (
+          <>
+            , or during <span className="text-ink">my Google meetings</span>
+          </>
+        )}
         .
       </p>
 
-      {/* Tray under the sentence */}
-      <div className={`flex w-full flex-col ${look.hold}`}>
-        {edit ? (
-          <section
-            aria-label={TITLES[edit]}
-            className={`flex flex-col border border-line bg-raised ${look.tray}`}
-            onWheel={(e) => {
-              scrolled.current += e.deltaY + e.deltaX;
-              if (Math.abs(scrolled.current) >= 40) {
-                move.current(scrolled.current > 0 ? 1 : -1);
-                scrolled.current = 0;
-              }
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-[17px] leading-6 font-semibold">{TITLES[edit]}</span>
-              <span className="text-[13px] leading-4 font-medium text-ink-2">Scroll or ← →</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Arrow label="Previous value" d="m15 18-6-6 6-6" cell={look.cell} onClick={() => pick(index - 1)} />
-              <div role="listbox" aria-label={TITLES[edit]} className="grid grow grid-cols-5 gap-1">
-                {[-2, -1, 0, 1, 2].map((d) => {
-                  const value = values[index + d];
-                  const text = look.values[Math.abs(d)]!;
-                  return (
-                    <button
-                      key={d}
-                      role="option"
-                      aria-selected={d === 0}
-                      disabled={value == null}
-                      className={`whitespace-nowrap ${look.cell} ${text} ${d === 0 ? 'bg-pill text-ink' : 'text-ink-2'} ${value == null ? '' : 'cursor-pointer'}`}
-                      onClick={() => pick(index + d)}
-                    >
-                      {value == null ? '' : show(edit, value)}
-                    </button>
-                  );
-                })}
-              </div>
-              <Arrow label="Next value" d="m9 18 6-6-6-6" cell={look.cell} onClick={() => pick(index + 1)} />
-              <button
-                className={`shrink-0 cursor-pointer bg-ink px-6 text-[15px] font-semibold text-on-ink ${look.cell}`}
-                onClick={() => setEdit(null)}
-              >
-                Done
-              </button>
-            </div>
-          </section>
-        ) : (
-          <div className={`text-[15px] leading-5 text-ink-2 ${look.hint}`}>Click any highlighted word to change it.</div>
-        )}
+      <div className={`text-[15px] leading-5 text-ink-2 ${look.hint}`}>
+        {edit ? 'Scroll, or use the arrows. Click elsewhere when you are done.' : 'Scroll over a highlighted word, or click it, to change it.'}
       </div>
 
-      {/* Meetings: always visible, so connecting the calendar is not hidden behind a word.
-          Inside a setup step there is no room for both: the value tray takes its place while open. */}
-      <section
-        aria-label="Meetings"
-        hidden={size === 'small' && edit != null}
-        className={`flex flex-col gap-3 border border-line ${look.card}`}
-      >
+      {/* Meetings: always visible, so connecting the calendar is not hidden behind a word */}
+      <section aria-label="Meetings" className={`flex flex-col gap-3 border border-line ${look.card}`}>
         <div className="flex items-center gap-4">
           <img src={calendar} alt="" className={`shrink-0 ${look.cardIcon}`} />
           <div className="flex min-w-0 grow flex-col gap-0.5 text-left">
@@ -245,23 +215,15 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
   );
 }
 
-function Arrow({ label, d, cell, onClick }: { label: string; d: string; cell: string; onClick: () => void }) {
+function Arrow({ label, d, width, disabled, onClick }: { label: string; d: string; width: string; disabled: boolean; onClick: () => void }) {
   return (
     <button
       aria-label={label}
-      className={`flex w-11 shrink-0 cursor-pointer items-center justify-center bg-pill ${cell}`}
+      disabled={disabled}
+      className={`flex shrink-0 items-center justify-center self-stretch rounded-[inherit] ${width} ${disabled ? 'opacity-30' : 'cursor-pointer'}`}
       onClick={onClick}
     >
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
+      <svg width="0.5em" height="0.5em" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
         <path d={d} />
       </svg>
     </button>

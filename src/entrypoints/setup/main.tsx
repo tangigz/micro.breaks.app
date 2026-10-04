@@ -207,11 +207,10 @@ function Setup() {
   // The open step: the first still to do, unless another one was clicked. None once everything is done.
   const open = view ?? (all ? -1 : first);
 
-  // The steps list is taller than the other screens: it needs nearly the full frame height
   return (
-    <Frame tall={!welcome}>
+    <Frame>
       <Header theme={state.settings.theme} />
-      <main className="relative grid w-[1120px] grow grid-cols-[420px_minmax(0,1fr)] items-center gap-20 pb-[72px]">
+      <main className={`relative grid w-[1120px] grow grid-cols-[420px_minmax(0,1fr)] items-center gap-20 ${welcome ? 'pb-[72px]' : 'pb-4'}`}>
         <Halo level={welcome ? 0 : level} />
 
         {/* Left: the battery. It fills as the steps are completed. */}
@@ -284,21 +283,21 @@ function Setup() {
           </div>
         ) : (
           // Right: the three steps on one screen. One is open at a time.
-          <div className="relative flex flex-col gap-7">
+          <div className="relative flex flex-col gap-5">
             <div className="flex flex-col gap-2">
-              <h1 className="m-0 text-[56px] leading-[60px] font-bold tracking-[-0.04em] whitespace-nowrap">
+              <h1 className="m-0 text-[48px] leading-[52px] font-bold tracking-[-0.04em] whitespace-nowrap">
                 {all ? 'All set.' : 'Charge your battery.'}
               </h1>
-              <div className="text-[22px] leading-[30px] font-semibold tracking-[-0.01em] text-ink-2">
-                {!all
-                  ? 'Three steps and micro.breaks is ready.'
-                  : state.settings.calendar
+              {all && (
+                <div className="text-[22px] leading-[30px] font-semibold tracking-[-0.01em] text-ink-2">
+                  {state.settings.calendar
                     ? "It runs on its own whenever you're working. No prompts during your meetings."
                     : "It runs on its own whenever you're working. Optional: connect Google Calendar so prompts wait for your meetings to end."}
-              </div>
+                </div>
+              )}
             </div>
 
-            <ol className="m-0 flex list-none flex-col gap-2 p-0">
+            <ol className="m-0 flex list-none flex-col gap-1.5 p-0">
               {steps.map((step, k) => {
                 const isOpen = k === open;
                 return (
@@ -306,7 +305,7 @@ function Setup() {
                     <button
                       aria-expanded={isOpen}
                       aria-label={`Step ${k + 1}, ${step.head}${done[k] ? ', done' : ''}`}
-                      className="flex w-full cursor-pointer items-center gap-4 rounded-card px-6 py-4 text-left"
+                      className="flex w-full cursor-pointer items-center gap-4 rounded-card px-6 py-3 text-left"
                       onClick={() => setView(isOpen ? null : k)}
                     >
                       <span
@@ -328,7 +327,7 @@ function Setup() {
                       </span>
                     </button>
                     {isOpen && (
-                      <div className="flex flex-col gap-5 px-6 pt-1 pb-6">
+                      <div className="flex flex-col gap-4 px-6 pt-1 pb-4">
                         {k === 0 ? (
                           <TimerSentence settings={state.settings} size="small" />
                         ) : (

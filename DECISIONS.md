@@ -66,6 +66,14 @@ Replaces the design's step screens (one step per screen, big pastel tile, 88 px 
 - The PostHog project is in the EU region.
 - The README says what is shared. The welcome screen only asks for the email; the explanation there was removed.
 
+## Timer values are changed in place (4 October 2026)
+
+Replaces the design's tray of five values under the sentence, on the setup step and on the movement timer screen.
+
+- Scrolling over a highlighted word changes it. Clicking it shows a previous and a next arrow inside the word; the arrow keys work too. Enter, Escape or a click elsewhere puts it back to rest.
+- Reason: in the setup step the tray made the step taller than a small window. Shrinking the screen to fit was rejected; the layout must stay as large as the window allows.
+- The steps screen was tightened instead (no subtitle until "All set.", smaller gaps), so it fits at the same scale as every other screen.
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.
