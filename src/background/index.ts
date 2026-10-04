@@ -85,7 +85,10 @@ async function enforceLock(): Promise<void> {
   const state = cache ?? (await loadState(await clockNow()));
   if (!isLocked(state)) return;
   const [active] = await browser.tabs.query({ active: true, lastFocusedWindow: true });
-  if ((active?.pendingUrl ?? active?.url) === browser.runtime.getURL(MISSION)) return;
+  const url = active?.pendingUrl ?? active?.url;
+  if (url === browser.runtime.getURL(MISSION)) return;
+  // Test mode: the video review page stays reachable during a break
+  if (import.meta.env.DEV && url === browser.runtime.getURL('/videos.html')) return;
   try {
     await show(MISSION);
   } catch {
