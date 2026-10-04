@@ -78,7 +78,9 @@ test('weekend', async ({ engine, home }) => {
 test('meeting: the pill, then a held prompt', async ({ engine, home }) => {
   await engine.setClock(...MONDAY, 10);
   const state = await engine.begin();
-  await engine.send({ type: 'calendar', busyUntil: state.seatedSince! + 90 * 60_000 });
+  // What a connected calendar leaves in storage: one meeting, from now until 11:30
+  await home.evaluate((busy) => chrome.storage.local.set({ calendarBusy: busy }), [[state.seatedSince!, state.seatedSince! + 90 * 60_000]]);
+  await engine.send({ type: 'settings', patch: { calendar: true } });
   await engine.advance(18);
   await expect(home.getByRole('status')).toHaveText('In a meeting until 11:30. Prompts wait.');
   await shot(home, 'meeting');

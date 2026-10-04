@@ -4,7 +4,16 @@ import type { Input, State } from '@/engine';
 import { clockNow } from './clock';
 import { STATE_KEY } from './store';
 
-export type Message = { mb: 'dispatch'; input: Input } | { mb: 'dev_advance'; ms: number };
+export type Message =
+  | { mb: 'dispatch'; input: Input }
+  | { mb: 'dev_advance'; ms: number }
+  | { mb: 'calendar'; connect: boolean };
+
+/** Connects or disconnects Google Calendar. Resolves with an error message to show, if any. */
+export async function setCalendar(connect: boolean): Promise<string | undefined> {
+  const reply: { error?: string } = await browser.runtime.sendMessage({ mb: 'calendar', connect } satisfies Message);
+  return reply.error;
+}
 
 /** Sends an action to the engine, through the background. Resolves with the new state. */
 export function send(input: Input): Promise<State> {

@@ -44,6 +44,13 @@ Replaces the design's step screens (one step per screen, big pastel tile, 88 px 
   - Energy boost 2, "5 MIN MIDDAY ENERGY BOOST": 0:40 to 6:11
 - "Back to work" closes the mission tab, so the user lands on what they had before. If it is the only tab, it becomes the new tab.
 
+## Google Calendar (4 October 2026)
+
+- The extension now has a fixed ID, `hkgliedfglkhagpbpljdbfabimefocak`, set by the `key` in `wxt.config.ts`. The Google OAuth client is tied to it.
+- Access is through `chrome.identity.getAuthToken`, with one scope, `calendar.freebusy`: busy times only, no titles or attendees. It works in Google Chrome signed in to a Google account; it does not work in Chrome for Testing.
+- Busy blocks for the next 12 hours are fetched every 5 min and kept, so a meeting that starts between two polls is still known. Each tick derives "in a meeting until" from them. Back-to-back and overlapping meetings count as one.
+- The OAuth client ID (`GOOGLE_CLIENT_ID` in `wxt.config.ts`) is still empty. Until it is set, "Connect Google Calendar" answers "Google Calendar is not set up for this build yet."
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.

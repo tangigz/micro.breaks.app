@@ -1,10 +1,11 @@
 import { browser } from 'wxt/browser';
-import { type Effect, type IdleState, type Input, isLocked, nextWake, type State, step } from '@/engine';
+import { busyUntil, type Effect, type IdleState, type Input, isLocked, nextWake, type State, step } from '@/engine';
 import { dayKey } from '@/engine/time';
 import type { Message } from '@/data/client';
 import { advanceClock, clockNow, toRealTime } from '@/data/clock';
 import { db } from '@/data/db';
 import { loadState, saveState } from '@/data/store';
+import { CALENDAR_ALARM, connectCalendar, disconnectCalendar, refreshCalendar, savedBusy } from './calendar';
 import { clearNotification, notify } from './notifications';
 import { HOME, MISSION, SETUP, show } from './tabs';
 import { allowYouTubeEmbeds } from './youtube';
@@ -54,8 +55,20 @@ async function sync(state: State): Promise<void> {
 
 async function run(input: Input, at?: number): Promise<State> {
   const now = at ?? (await clockNow());
-  const prev = cache ?? (await loadState(now));
-  const { state, effects } = step(prev, input, now);
+  let prev = cache ?? (await loadState(now));
+  const effects: Effect[] = [];
+  // Before each tick, tell the engine whether a meeting is running: prompts and heads-ups wait for it
+  if (input.type === 'tick') {
+    const until = prev.settings.calendar ? busyUntil(await savedBusy(), now) : null;
+    if (until !== prev.meetingUntil) {
+      // A meeting ending can open the held prompt: its effects count too
+      const result = step(prev, { type: 'calendar', busyUntil: until }, now);
+      prev = result.state;
+      effects.push(...result.effects);
+    }
+  }
+  const { state, effects: more } = step(prev, input, now);
+  effects.push(...more);
   cache = state;
   // The service worker can be stopped at any time: save before doing anything else
   await saveState(state);
@@ -97,6 +110,31 @@ async function enforceLock(): Promise<void> {
   }
 }
 
+/** Every 5 min while connected: fetch the busy blocks again. A failed poll keeps the last ones. */
+async function pollCalendar(): Promise<void> {
+  const now = await clockNow();
+  const state = cache ?? (await loadState(now));
+  if (!state.settings.calendar) return;
+  try {
+    await refreshCalendar(now);
+  } catch (error) {
+    console.error('[micro.breaks] calendar poll failed', error);
+  }
+  await dispatch({ type: 'tick' });
+}
+
+async function setCalendar(connect: boolean): Promise<string | undefined> {
+  const now = await clockNow();
+  if (connect) {
+    const error = await connectCalendar(now);
+    if (error) return error;
+  } else {
+    await disconnectCalendar();
+  }
+  await dispatch({ type: 'settings', patch: { calendar: connect } });
+  await dispatch({ type: 'tick' });
+}
+
 /** Browser tests send idle changes by hand; the machine's real idle state must not interfere. */
 async function realIdleIgnored(): Promise<boolean> {
   return (await browser.storage.local.get('testIgnoreIdle')).testIgnoreIdle === true;
@@ -118,7 +156,10 @@ export function start(): void {
 
   browser.runtime.onStartup.addListener(() => void dispatch({ type: 'startup' }));
 
-  browser.alarms.onAlarm.addListener(() => void dispatch({ type: 'tick' }));
+  browser.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === CALENDAR_ALARM) void pollCalendar();
+    else void dispatch({ type: 'tick' });
+  });
 
   browser.idle.onStateChanged.addListener((idle) => {
     void realIdleIgnored().then((ignored) => {
@@ -150,6 +191,7 @@ export function start(): void {
   browser.runtime.onMessage.addListener((message: Message, _sender, respond) => {
     if (message?.mb === 'dispatch') void dispatch(message.input).then(respond);
     else if (message?.mb === 'dev_advance') void advance(message.ms).then(respond);
+    else if (message?.mb === 'calendar') void setCalendar(message.connect).then((error) => respond({ error }));
     else return;
     return true;
   });
@@ -159,6 +201,7 @@ export function start(): void {
   // Every time the service worker wakes: the alarm exists, and the idle state has not changed behind our back
   void (async () => {
     if (!(await browser.alarms.get(TICK))) await browser.alarms.create(TICK, { periodInMinutes: 1 });
+    if (!(await browser.alarms.get(CALENDAR_ALARM))) await browser.alarms.create(CALENDAR_ALARM, { periodInMinutes: 5 });
     const state = await dispatch({ type: 'tick' });
     // A break is still open (the extension was reloaded or updated mid-break): bring its tab back
     if (isLocked(state)) void enforceLock();
