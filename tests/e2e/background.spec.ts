@@ -1,3 +1,4 @@
+import type { State } from '../../src/engine';
 import { expect, test } from './extension';
 
 test('a full cycle: heads-up, prompt, mission, recharged', async ({ context, engine }) => {
@@ -46,7 +47,7 @@ test('the state survives the service worker stopping', async ({ context, engine,
   const before = await engine.send({ type: 'idle', state: 'active' });
 
   const saved = await home.evaluate(() => chrome.storage.local.get('state'));
-  expect(saved.state.seatedSince).toBe(before.seatedSince);
+  expect((saved.state as State).seatedSince).toBe(before.seatedSince);
   expect(await home.evaluate(() => chrome.alarms.get('tick'))).toMatchObject({ periodInMinutes: 1 });
 
   // Stop the worker, then wake it with a message: it picks the saved state back up
