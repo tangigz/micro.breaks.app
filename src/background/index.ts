@@ -1,5 +1,5 @@
 import { browser } from 'wxt/browser';
-import { type Effect, type IdleState, type Input, nextWake, type State, step } from '@/engine';
+import { type Effect, type IdleState, type Input, isLocked, nextWake, type State, step } from '@/engine';
 import { dayKey } from '@/engine/time';
 import type { Message } from '@/data/client';
 import { advanceClock, clockNow, toRealTime } from '@/data/clock';
@@ -38,7 +38,7 @@ async function execute(effect: Effect, now: number): Promise<void> {
       await show(HOME);
       break;
     case 'unlock':
-      // The lock itself arrives with the mission prompt (#6)
+      // Nothing to undo: the lock is enforced from the state, see enforceLock
       break;
   }
 }
@@ -76,6 +76,23 @@ export function dispatch(input: Input, at?: number): Promise<State> {
   return result;
 }
 
+/**
+ * The lock: from the prompt until the mission is completed or skipped, any tab or window switch
+ * inside Chrome is sent back to the mission tab. Other apps can't be blocked.
+ */
+async function enforceLock(): Promise<void> {
+  const state = cache ?? (await loadState(await clockNow()));
+  if (!isLocked(state)) return;
+  const [active] = await browser.tabs.query({ active: true, lastFocusedWindow: true });
+  if ((active?.pendingUrl ?? active?.url) === browser.runtime.getURL(MISSION)) return;
+  try {
+    await show(MISSION);
+  } catch {
+    // Chrome refuses tab changes while the user is dragging a tab: try once more
+    setTimeout(() => void show(MISSION).catch(() => {}), 200);
+  }
+}
+
 /** Test mode: moves the clock forward, ticking every minute on the way like the alarm would. */
 async function advance(ms: number): Promise<State> {
   const end = (await clockNow()) + ms;
@@ -98,6 +115,16 @@ export function start(): void {
     const state = idle as IdleState;
     const idleForMs = state === 'idle' && cache ? detectionSeconds(cache) * 1000 : undefined;
     void dispatch({ type: 'idle', state, idleForMs });
+  });
+
+  browser.tabs.onActivated.addListener(() => void enforceLock());
+  browser.tabs.onCreated.addListener(() => void enforceLock());
+  browser.tabs.onRemoved.addListener(() => void enforceLock());
+  browser.tabs.onUpdated.addListener((_id, change) => {
+    if (change.url) void enforceLock();
+  });
+  browser.windows.onFocusChanged.addListener((windowId) => {
+    if (windowId !== browser.windows.WINDOW_ID_NONE) void enforceLock();
   });
 
   const onNotification = (id: string) => {
