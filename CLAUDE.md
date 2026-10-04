@@ -8,6 +8,8 @@ Chrome MV3 extension (WXT, React, TypeScript, Tailwind). A battery on every new 
 - Look: `docs/design/screens.html` (59 frames, 1440 × 900).
 - Rules change in the spec or `DECISIONS.md` first, then in code.
 
+- How to run the test browser, test a pull request and build a release: `docs/development.md`. The README is for people installing the extension, not for developers.
+
 ## Layout
 
 - `src/engine/` — pure rules engine, `step(state, input, now) → { state, effects }`. No `chrome.*`, no `Date.now()`. Every product rule lives here, with tests.
