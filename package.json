@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "postinstall": "wxt prepare",
     "e2e": "wxt build && playwright test",
-    "pr": "sh scripts/pr.sh"
+    "pr": "sh scripts/pr.sh",
+    "package": "sh scripts/package.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
