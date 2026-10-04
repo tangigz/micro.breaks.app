@@ -13,6 +13,12 @@ interface Fixtures {
     send(input: Input): Promise<State>;
     /** Test mode: moves the clock forward. */
     advance(min: number): Promise<State>;
+    /** Test mode: jumps to a local date and time (in the future), without ticking on the way. */
+    setClock(year: number, month: number, day: number, hour: number, minute?: number): Promise<void>;
+    /** Jumps forward without ticking, as if Chrome had been closed. */
+    jump(min: number): Promise<void>;
+    /** Setup done, working hours as in the spec, user active. */
+    begin(): Promise<State>;
     notifications(): Promise<string[]>;
     events(): Promise<string[]>;
   };
@@ -22,6 +28,7 @@ export const test = base.extend<Fixtures>({
   context: async ({}, use) => {
     const context = await chromium.launchPersistentContext('', {
       channel: 'chromium',
+      viewport: { width: 1440, height: 900 },
       args: [`--disable-extensions-except=${EXTENSION}`, `--load-extension=${EXTENSION}`],
     });
     await use(context);
@@ -38,8 +45,23 @@ export const test = base.extend<Fixtures>({
   },
   engine: async ({ home }, use) => {
     const message = <T>(m: unknown) => home.evaluate((msg) => chrome.runtime.sendMessage(msg), m) as Promise<T>;
+    const send = (input: Input) => message<State>({ mb: 'dispatch', input });
     await use({
-      send: (input) => message({ mb: 'dispatch', input }),
+      send,
+      setClock: (year, month, day, hour, minute = 0) =>
+        home.evaluate(
+          (target) => chrome.storage.local.set({ devOffsetMs: target - Date.now() }),
+          new Date(year, month - 1, day, hour, minute).getTime(),
+        ),
+      jump: (min) =>
+        home.evaluate(async (ms) => {
+          const { devOffsetMs = 0 } = await chrome.storage.local.get('devOffsetMs');
+          await chrome.storage.local.set({ devOffsetMs: (devOffsetMs as number) + ms });
+        }, min * 60_000),
+      begin: async () => {
+        await send({ type: 'setup_done' });
+        return send({ type: 'idle', state: 'active' });
+      },
       advance: (min) => message({ mb: 'dev_advance', ms: min * 60_000 }),
       notifications: () =>
         home.evaluate(() => new Promise<string[]>((r) => chrome.notifications.getAll((all) => r(Object.keys(all))))),

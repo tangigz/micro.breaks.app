@@ -55,7 +55,7 @@ export function newTabView(s: State, now: number): NewTabView {
     mode,
     level: batteryLevel(s, now),
     nextInMs: s.dueAt != null ? Math.max(0, s.dueAt - now) : interval,
-    seatedMs: s.seatedSince != null ? now - s.seatedSince : 0,
+    seatedMs: s.seatedSince != null ? Math.max(0, now - s.seatedSince) : 0,
     dueAt: s.dueAt,
     meetingUntil: meeting ? s.meetingUntil : null,
     gapMs: s.gap ? s.gap.until - s.gap.since : 0,
