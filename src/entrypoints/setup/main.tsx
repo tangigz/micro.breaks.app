@@ -307,8 +307,7 @@ function Setup() {
                 <a href={PRIVACY_URL} target="_blank" rel="noreferrer" className="text-ink-2 underline underline-offset-2">
                   Privacy policy
                 </a>
-                . We do not share your personal information with any third party and only collect product usage data to improve
-                micro.breaks.
+                . We never sell your personal information, and only collect product usage data to improve micro.breaks.
               </p>
             </form>
           </div>

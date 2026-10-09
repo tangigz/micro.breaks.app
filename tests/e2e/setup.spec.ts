@@ -16,7 +16,7 @@ test('one screen: the battery fills as the three steps are completed', async ({ 
   await engine.setClock(2030, 1, 7, 10);
   await expect(home.getByText('More energy')).toBeVisible();
   // Before anything is collected: what is shared, agreement by starting, and the privacy policy
-  const consent = home.getByText('By starting, you agree to our Privacy policy. We do not share your personal information');
+  const consent = home.getByText('By starting, you agree to our Privacy policy. We never sell your personal information');
   await expect(consent).toBeVisible();
   // It lines up with the field on the left and stops at the right edge of "Let's start"
   const [text, field, button] = await Promise.all([
