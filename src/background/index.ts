@@ -8,7 +8,7 @@ import { loadState, saveState } from '@/data/store';
 import { flushSoon, track } from './analytics';
 import { CALENDAR_ALARM, connectCalendar, disconnectCalendar, refreshCalendar, savedBusy } from './calendar';
 import { clearNotification, notify } from './notifications';
-import { HOME, MISSION, SETUP, show } from './tabs';
+import { HOME, inFront, MISSION, SETUP, show } from './tabs';
 import { allowYouTubeEmbeds } from './youtube';
 
 const TICK = 'tick';
@@ -102,11 +102,9 @@ export function dispatch(input: Input, at?: number): Promise<State> {
 async function enforceLock(): Promise<void> {
   const state = cache ?? (await loadState(await clockNow()));
   if (!isLocked(state)) return;
-  const [active] = await browser.tabs.query({ active: true, lastFocusedWindow: true });
-  const url = active?.pendingUrl ?? active?.url;
-  if (url === browser.runtime.getURL(MISSION)) return;
+  if (await inFront(MISSION)) return;
   // Test mode: the video review page stays reachable during a break
-  if (import.meta.env.DEV && url === browser.runtime.getURL('/videos.html')) return;
+  if (import.meta.env.DEV && (await inFront('/videos.html' as typeof MISSION))) return;
   try {
     await show(MISSION);
   } catch {
@@ -180,8 +178,9 @@ export function start(): void {
   browser.tabs.onActivated.addListener(() => void enforceLock());
   browser.tabs.onCreated.addListener(() => void enforceLock());
   browser.tabs.onRemoved.addListener(() => void enforceLock());
+  // The mission tab being taken somewhere else shows up as a page load, not a URL we can read
   browser.tabs.onUpdated.addListener((_id, change) => {
-    if (change.url) void enforceLock();
+    if (change.status === 'loading') void enforceLock();
   });
   browser.windows.onFocusChanged.addListener((windowId) => {
     if (windowId !== browser.windows.WINDOW_ID_NONE) void enforceLock();

@@ -74,6 +74,17 @@ Replaces the design's tray of five values under the sentence, on the setup step 
 - Reason: in the setup step the tray made the step taller than a small window. Shrinking the screen to fit was rejected; the layout must stay as large as the window allows.
 - The steps screen was tightened instead (no subtitle until "All set.", smaller gaps), so it fits at the same scale as every other screen.
 
+## Chrome Web Store (9 October 2026)
+
+Decided: publish as Public, keep the video missions, keep the email for marketing, open Google Calendar to everyone.
+
+- **No "tabs" permission.** The extension finds its own pages with `runtime.getContexts`. Tab URLs are hidden from it, and Chrome no longer warns about browsing history at install.
+- **Two builds.** `npm run package` makes the tester zip (fixed ID) and `micro.breaks-store.zip` (no key; the store assigns the ID). The video review page is in neither.
+- **Consent before anything is sent.** The welcome screen says what is collected and links to the privacy policy. Events, the install event included, wait in the queue until the user starts.
+- **Setup text by platform.** The notification and login-item instructions are written for macOS, for Windows, and generically for anything else.
+- **Homepage and privacy policy** are `docs/index.html` and `docs/privacy.html`, to be served by GitHub Pages. The listing texts, permission justifications and images are in `docs/store/`.
+- Known review risks are listed at the end of `docs/store/listing.md`.
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.

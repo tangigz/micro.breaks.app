@@ -6,9 +6,16 @@ const missionPage = async (context: BrowserContext): Promise<Page> => {
   return context.pages().find((p) => p.url().endsWith('/mission.html'))!;
 };
 
-/** The URL of the tab Chrome is showing. */
+/**
+ * The micro.breaks page Chrome is showing, or '' for anything else. The extension has no "tabs"
+ * permission, so tab URLs are hidden from it: its own pages are found through runtime.getContexts.
+ */
 const activeTab = (home: Page) =>
-  home.evaluate(async () => (await chrome.tabs.query({ active: true, lastFocusedWindow: true }))[0]?.url ?? '');
+  home.evaluate(async () => {
+    const [active] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    const contexts = await chrome.runtime.getContexts({ contextTypes: ['TAB'] });
+    return contexts.find((c) => c.tabId === active?.id)?.documentUrl ?? '';
+  });
 
 test('break prompt: one mission, switch once, Enter starts it', async ({ context, engine, home }) => {
   await engine.setClock(2030, 1, 7, 10);
