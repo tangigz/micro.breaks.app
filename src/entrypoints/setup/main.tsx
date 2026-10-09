@@ -269,7 +269,7 @@ function Setup() {
             </ul>
             {/* The Chrome Web Store requires saying what is collected, and getting agreement, before any of it is sent */}
             <form
-              className="flex flex-col gap-3"
+              className="flex w-fit flex-col gap-3"
               onSubmit={(e) => {
                 e.preventDefault();
                 if (!validEmail) return;
@@ -301,13 +301,14 @@ function Setup() {
                   Let's start
                 </button>
               </div>
-              <p className="m-0 max-w-[600px] text-[13px] leading-[18px] text-ink-2">
-                We'll email you product updates, and use product usage data to improve micro.breaks. By starting, you agree to
-                our{' '}
+              {/* As wide as the field and button above, never wider: w-0 with min-w-full takes the row's width */}
+              <p className="m-0 w-0 min-w-full text-[13px] leading-[18px] text-ink-2">
+                By starting, you agree to our{' '}
                 <a href={PRIVACY_URL} target="_blank" rel="noreferrer" className="text-ink-2 underline underline-offset-2">
                   Privacy policy
                 </a>
-                .
+                . We do not share your personal information with any third party and only collect product usage data to improve
+                micro.breaks.
               </p>
             </form>
           </div>
