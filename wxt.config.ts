@@ -18,7 +18,7 @@ export default defineConfig({
     name: 'micro.breaks',
     description: 'Move a little, every hour you sit.',
     key: KEY,
-    permissions: ['idle', 'alarms', 'notifications', 'storage', 'tabs', 'declarativeNetRequestWithHostAccess', 'identity'],
+    permissions: ['idle', 'alarms', 'notifications', 'storage', 'declarativeNetRequestWithHostAccess', 'identity'],
     // Video missions embed YouTube (src/background/youtube.ts); meetings come from Google Calendar
     // (src/background/calendar.ts); usage events go to PostHog (src/background/analytics.ts)
     host_permissions: ['https://www.youtube-nocookie.com/*', 'https://www.googleapis.com/calendar/*', 'https://*.i.posthog.com/*'],
