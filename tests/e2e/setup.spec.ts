@@ -16,7 +16,7 @@ test('one screen: the battery fills as the three steps are completed', async ({ 
   await engine.setClock(2030, 1, 7, 10);
   await expect(home.getByText('More energy')).toBeVisible();
   // Before anything is collected: what is shared, agreement by starting, and the privacy policy
-  await expect(home.getByText('By starting, you agree to get news about micro.breaks by email')).toBeVisible();
+  await expect(home.getByText("We'll email you product updates, and use product usage data to improve micro.breaks.")).toBeVisible();
   await expect(home.getByRole('link', { name: 'Privacy policy' })).toHaveAttribute('href', /privacy\.html$/);
   await expect(home.getByRole('button', { name: "Let's start" })).toBeDisabled();
   await home.getByLabel('Your email').fill('not an email');

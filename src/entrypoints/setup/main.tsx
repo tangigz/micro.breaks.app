@@ -302,11 +302,12 @@ function Setup() {
                 </button>
               </div>
               <p className="m-0 max-w-[600px] text-[13px] leading-[18px] text-ink-2">
-                By starting, you agree to get news about micro.breaks by email, and to share how you use it (missions started,
-                completed or skipped, your timer settings) so it can be improved. Never the sites you visit or your calendar.{' '}
+                We'll email you product updates, and use product usage data to improve micro.breaks. By starting, you agree to
+                our{' '}
                 <a href={PRIVACY_URL} target="_blank" rel="noreferrer" className="text-ink-2 underline underline-offset-2">
                   Privacy policy
                 </a>
+                .
               </p>
             </form>
           </div>
