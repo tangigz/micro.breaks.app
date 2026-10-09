@@ -72,6 +72,9 @@ async function flush(): Promise<void> {
   const stored = await browser.storage.local.get([QUEUE_KEY, TEST_KEY]);
   const batch = (stored[QUEUE_KEY] as Queued[] | undefined) ?? [];
   if (!batch.length || !POSTHOG_KEY || stored[TEST_KEY] || import.meta.env.DEV) return;
+  // Nothing leaves the browser before the user has agreed, by starting from the welcome screen.
+  // Until then events wait in the queue, the install event included.
+  if (!(await tester()).email) return;
   try {
     const response = await fetch(`${POSTHOG_HOST}/batch/`, {
       method: 'POST',

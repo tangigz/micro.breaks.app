@@ -3,6 +3,7 @@ import { browser } from 'wxt/browser';
 import brain from '@/assets/emoji/brain.png';
 import biceps from '@/assets/emoji/flexed-biceps.png';
 import voltage from '@/assets/emoji/high-voltage.png';
+import { PRIVACY_URL } from '@/config';
 import { send, setCalendar, track, useEngine } from '@/data/client';
 import { useStored } from '@/data/stored';
 import type { Settings } from '@/engine';
@@ -27,6 +28,27 @@ interface Progress {
   /** 0 to do · 1 "Show me how" open · 2 done */
   login: 0 | 1 | 2;
 }
+
+/** The setup talks about system settings, which differ by platform. */
+const PLATFORM = /Mac/i.test(navigator.platform) ? 'mac' : /Win/i.test(navigator.platform) ? 'windows' : 'other';
+
+const NOTIFY = {
+  mac: [
+    'Allow notifications, then set Chrome to Alerts, not Banners, in System Settings › Notifications.',
+    'Allowed. Now set Chrome to Alerts in System Settings › Notifications, then test.',
+  ],
+  windows: [
+    'Allow notifications, then check that Google Chrome is on in Settings › System › Notifications.',
+    'Allowed. Now check that Google Chrome is on in Settings › System › Notifications, then test.',
+  ],
+  other: ['Allow notifications, then send a test.', 'Allowed. Now send a test.'],
+}[PLATFORM];
+
+const LOGIN_HOW = {
+  mac: 'System Settings › General › Login Items › “+” › Google Chrome.',
+  windows: 'Settings › Apps › Startup › Google Chrome.',
+  other: 'Add Google Chrome to the apps your system opens at login.',
+}[PLATFORM];
 
 const START: Progress = { started: false, timer: false, notifications: 0, login: 0 };
 
@@ -162,15 +184,15 @@ function Setup() {
     },
     {
       head: 'Make notifications stay',
-      summary: 'Alerts are on. Notifications wait for you.',
+      summary: 'Notifications stay until you close them.',
       desc:
         n === 0
-          ? 'Allow notifications, then set Chrome to Alerts, not Banners, in System Settings › Notifications.'
+          ? NOTIFY[0]
           : n === 1
-            ? 'Allowed. Now set Chrome to Alerts in System Settings › Notifications, then test.'
+            ? NOTIFY[1]
             : n === 2
               ? 'Did the test stay on screen until you closed it?'
-              : 'Alerts are on. Notifications wait for you.',
+              : 'Notifications stay until you close them.',
       main:
         n === 0
           ? { label: 'Allow', run: () => void allow() }
@@ -188,7 +210,7 @@ function Setup() {
         p.login === 0
           ? 'micro.breaks only runs when Chrome is open. Add it to login items to suggest when to move more precisely.'
           : p.login === 1
-            ? 'System Settings › General › Login Items › “+” › Google Chrome.'
+            ? LOGIN_HOW
             : 'Chrome opens when you log in. micro.breaks starts with it.',
       main: p.login >= 2 ? next : { label: 'Done', run: () => completeStep(3, { login: 2 }) },
       more: [{ label: 'Show me how', run: () => stay({ login: 1 }) }],
@@ -245,7 +267,7 @@ function Setup() {
                 </li>
               ))}
             </ul>
-            {/* Test phase: an email tells testers apart in the usage data. What is shared is explained in the README. */}
+            {/* The Chrome Web Store requires saying what is collected, and getting agreement, before any of it is sent */}
             <form
               className="flex flex-col gap-3"
               onSubmit={(e) => {
@@ -279,6 +301,13 @@ function Setup() {
                   Let's start
                 </button>
               </div>
+              <p className="m-0 max-w-[600px] text-[13px] leading-[18px] text-ink-2">
+                By starting, you agree to get news about micro.breaks by email, and to share how you use it (missions started,
+                completed or skipped, your timer settings) so it can be improved. Never the sites you visit or your calendar.{' '}
+                <a href={PRIVACY_URL} target="_blank" rel="noreferrer" className="text-ink-2 underline underline-offset-2">
+                  Privacy policy
+                </a>
+              </p>
             </form>
           </div>
         ) : (

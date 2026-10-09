@@ -11,6 +11,8 @@ npm run package
 
 This builds `.output/micro.breaks.zip`, holding one `micro.breaks` folder. Attach it to a GitHub release; the README's download button points to the latest one.
 
+It also builds `.output/micro.breaks-store.zip` for the Chrome Web Store. What to paste into the store's dashboard is in `docs/store/listing.md`.
+
 ## Testing a pull request
 
 ```bash

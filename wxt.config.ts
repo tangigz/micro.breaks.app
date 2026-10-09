@@ -2,10 +2,18 @@ import { defineConfig } from 'wxt';
 import tailwindcss from '@tailwindcss/vite';
 
 /**
- * OAuth client for Google Calendar: type "Chrome extension", created in Google Cloud for the
- * extension ID below. If left empty, "Connect Google Calendar" says it is not set up.
+ * Two builds. The tester build (default) has a fixed extension ID, set by KEY below. The Chrome
+ * Web Store build (MB_STORE=1, `npm run package:store`) has no key: the store assigns its own ID.
  */
-const GOOGLE_CLIENT_ID: string = '541895009206-9g6rhs77sr2l74e2b53uq3mei1d7srsd.apps.googleusercontent.com';
+const STORE = process.env.MB_STORE === '1';
+
+/**
+ * OAuth clients for Google Calendar: type "Chrome extension", created in Google Cloud for one
+ * extension ID each. If left empty, "Connect Google Calendar" says it is not set up.
+ */
+const GOOGLE_CLIENT_ID: string = STORE
+  ? '' // To create once the store has assigned the item its ID
+  : '541895009206-9g6rhs77sr2l74e2b53uq3mei1d7srsd.apps.googleusercontent.com';
 
 /** Public key that fixes the extension ID to hkgliedfglkhagpbpljdbfabimefocak, which the OAuth client is tied to. */
 const KEY =
@@ -17,15 +25,23 @@ export default defineConfig({
   manifest: {
     name: 'micro.breaks',
     description: 'Move a little, every hour you sit.',
-    key: KEY,
+    ...(STORE ? {} : { key: KEY }),
     permissions: ['idle', 'alarms', 'notifications', 'storage', 'declarativeNetRequestWithHostAccess', 'identity'],
     // Video missions embed YouTube (src/background/youtube.ts); meetings come from Google Calendar
     // (src/background/calendar.ts); usage events go to PostHog (src/background/analytics.ts)
-    host_permissions: ['https://www.youtube-nocookie.com/*', 'https://www.googleapis.com/calendar/*', 'https://*.i.posthog.com/*'],
+    host_permissions: ['https://www.youtube-nocookie.com/*', 'https://www.googleapis.com/calendar/*', 'https://eu.i.posthog.com/*'],
     // Read-only, busy times only: no event titles, no attendees
     ...(GOOGLE_CLIENT_ID
       ? { oauth2: { client_id: GOOGLE_CLIENT_ID, scopes: ['https://www.googleapis.com/auth/calendar.freebusy'] } }
       : {}),
+  },
+  hooks: {
+    // The video review page is a test-mode tool: it does not ship
+    'entrypoints:found': (wxt, infos) => {
+      if (wxt.config.mode !== 'production') return;
+      const i = infos.findIndex((e) => e.name === 'videos');
+      if (i >= 0) infos.splice(i, 1);
+    },
   },
   vite: () => ({ plugins: [tailwindcss()] }),
 });
