@@ -101,27 +101,22 @@ Regenerate them with `npm run build && node scripts/store-screens.mjs`.
 
 ## Test instructions tab
 
-The reviewer needs no account. Paste:
+Username and password: empty, there is no login. The field for instructions takes 500 characters at most. Pasted:
 
-    No login is needed.
-    1. After install, a welcome page opens. Enter any email address and click "Let's start".
-    2. Click "Continue", then in step 2 click "Allow", "Send a test" and "Yes, it stayed", then in step 3 click "Done", then "Start moving".
-    3. Open a new tab: it shows the battery and the time to the next break.
-    4. Breaks only happen during the working hours shown on the chip under the countdown (9:00 to 18:00 by default). If the new tab says "Done for today", click that chip and move the end of the day later, then go back.
-    5. Click "Start a break now". The "Time to move." tab opens and Chrome is kept on it: switching to another tab brings you back.
-    6. Click "Start mission". The countdown only runs while the keyboard and mouse are untouched, so leave the computer idle for 5 minutes to complete it, or click "Skip (it'll cost you)" and solve the challenge to leave.
-    Google Calendar is optional: "Connect Google Calendar" on the timer screen asks for read-only free/busy access.
+    No login needed.
+    1. Welcome page: enter any email, click Let's start, Continue, Allow, Send a test, Yes it stayed, Done, Start moving.
+    2. Open a new tab: battery and countdown. If it says "Done for today", click the timer chip and move the end of day later (breaks only run in working hours, 9:00-18:00 by default).
+    3. Click "Start a break now": Chrome is kept on the mission tab.
+    4. Click Start mission, then stay idle 5 min, or click "Skip (it'll cost you)".
+    Google Calendar is optional.
 
 ## Distribution tab
 
 **Visibility:** Public. **Regions:** all. **Pricing:** free.
 
-## Order of operations
+## Status
 
-1. Done: the zip was uploaded as a draft, the store assigned the ID above, and a Google client of type "Chrome extension" was created for it.
-2. Upload the current `micro.breaks-store.zip` under Package › Upload new package.
-3. In Google Auth Platform › Audience, click "Publish app", so that accounts outside the test-user list can connect.
-4. Fill the tabs above, then submit for review.
+Submitted for review on 10 October 2026, as version 0.1.4. Uploading a new package while it is in review restarts the review.
 
 ## Known review risks
 

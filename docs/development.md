@@ -26,3 +26,7 @@ This checks out pull request 12, installs dependencies and opens the test browse
 - First time on a machine: `npx playwright install chromium`.
 
 `npm run dev` does the same for the branch you are on.
+
+## Known tooling vulnerabilities
+
+`npm audit` reports 4 high-severity findings, all from `node-forge`, which `web-ext` (the tool that launches the test browser) pulls in. No fixed version of `node-forge` exists yet. It runs only on the developer's machine and is not part of the extension: `npm audit --omit=dev` reports none. `shell-quote`, from the same tool, is pinned to a fixed version in `package.json` under `overrides`.

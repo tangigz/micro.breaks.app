@@ -65,7 +65,12 @@ export async function disconnectCalendar(): Promise<void> {
   try {
     const access = await token(false);
     await browser.identity.removeCachedAuthToken({ token: access });
-    await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${access}`);
+    // In the body, not the address: a token in a URL ends up in logs
+    await fetch('https://oauth2.googleapis.com/revoke', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ token: access }),
+    });
   } catch {
     // Already disconnected on Google's side
   }
