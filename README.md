@@ -48,7 +48,7 @@ Download the new zip, replace what's in your **micro.breaks** folder, then click
 
 To learn whether micro.breaks works, a few things are shared with its author, Tangi:
 
-- ✅ **Shared:** your email, and what you do inside micro.breaks: installing it, finishing setup, missions started and completed, skips, and changes to your timer. This goes to [PostHog](https://posthog.com), hosted in the EU.
+- ✅ **Shared:** your email, used only to recognise your installation and to contact you about your feedback, and what you do inside micro.breaks: installing it, finishing setup, missions started and completed, skips, and changes to your timer. This goes to [PostHog](https://posthog.com), hosted in the EU.
 - 🚫 **Never shared:** the sites you visit, your tabs, or your calendar. Your busy times are read on your computer and stay there.
 
 Removing the extension stops all of it.
