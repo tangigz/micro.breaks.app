@@ -12,7 +12,7 @@ Upload `.output/micro.breaks-store.zip`, built by `npm run package`. It has no f
 
     micro.breaks
 
-**Summary** (132 characters at most)
+**Summary** (132 characters at most; the dashboard reads it from the zip's manifest, set in `wxt.config.ts`)
 
     Move a little, every hour you sit. A battery drains on your new tab; when it's empty, Chrome locks until you take a short break.
 
@@ -96,6 +96,19 @@ Regenerate them with `npm run build && node scripts/store-screens.mjs`.
 **Certifications:** tick all three (no sale to third parties, no use unrelated to the single purpose, no use for creditworthiness or lending).
 
 **Privacy policy URL:** https://tangigz.github.io/micro.breaks.app/privacy.html
+
+## Test instructions tab
+
+The reviewer needs no account. Paste:
+
+    No login is needed.
+    1. After install, a welcome page opens. Enter any email address and click "Let's start".
+    2. Click "Continue", then in step 2 click "Allow", "Send a test" and "Yes, it stayed", then in step 3 click "Done", then "Start moving".
+    3. Open a new tab: it shows the battery and the time to the next break.
+    4. Breaks only happen during the working hours shown on the chip under the countdown (9:00 to 18:00 by default). If the new tab says "Done for today", click that chip and move the end of the day later, then go back.
+    5. Click "Start a break now". The "Time to move." tab opens and Chrome is kept on it: switching to another tab brings you back.
+    6. Click "Start mission". The countdown only runs while the keyboard and mouse are untouched, so leave the computer idle for 5 minutes to complete it, or click "Skip (it'll cost you)" and solve the challenge to leave.
+    Google Calendar is optional: "Connect Google Calendar" on the timer screen asks for read-only free/busy access.
 
 ## Distribution tab
 
