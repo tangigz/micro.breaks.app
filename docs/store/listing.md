@@ -22,45 +22,43 @@ Upload `.output/micro.breaks-store.zip`, built by `npm run package`. It has no f
 
 **Language:** English
 
-**Description**
+**Description** (written by Tangi; this is the text kept for the submission)
 
-    micro.breaks gets you out of your chair once an hour.
+    # Sitting all day in front of your computer?
 
-    A battery on every new tab drains while you sit. When it is empty, Chrome locks onto one short mission that takes you away from your desk. Do the mission and the battery recharges.
+    micro.breaks helps you build regular movement breaks into your workday, at the office or at home, so you can stay energized, focused, and feel better in your body.
 
-    WHAT IT DOES
+    Your battery drains as you sit. When it's empty, it's time to move. Complete a five-minute mission to unlock Chrome and get back to work.
 
-    • Replaces your new tab page with a battery and the time to your next break.
-    • At break time, opens a "Time to move." tab with one mission: a walk, a glass of water, the stairs, a short stretch video.
-    • Locks Chrome onto that tab until the mission is done. If you switch to another tab or window in Chrome, you are brought back. Your other apps are not blocked.
-    • The mission timer only counts down while you are away from your keyboard and mouse.
-    • Really can't right now? A skip challenge lets you out: a few sums, or a sentence to type exactly.
+    **No more snoozed reminders. Just five minutes to move, recharge, and get back to work.**
 
-    YOU STAY IN CONTROL
+    ## MAKE YOUR BREAKS HAPPEN
 
-    • You choose how often (every 30 to 90 minutes), your working hours, your days, and your lunch break.
-    • Nothing happens outside those hours, at lunch, or on days off.
-    • Optional: connect Google Calendar and you are never prompted during a meeting.
-    • To pause, switch the extension off in chrome://extensions. To stop, remove it: your new tab is back to normal at once.
+    🔋 **See your sitting time add up.** Your new tab shows a battery that drains as you sit, counting down to your next movement break.
 
-    WHAT IT ASKS FOR, AND WHY
+    🔒 **Your break can't be ignored.** When it's time to move, Chrome keeps you on your break mission for five minutes, so you can't simply switch tabs and carry on working.
 
-    • Your email, on the welcome screen, only to recognise your installation and to contact you about your feedback.
-    • A few usage events (setup finished, missions started, completed or skipped, timer changes), to improve it.
-    • It never reads the sites you visit, your tabs or your history.
-    • If you connect Google Calendar, it reads only when you are busy, never titles or guests, and that stays on your computer.
+    🚶 **Five-minute missions to get you moving.** We suggest what to do during your day: take a walk, grab some water, climb the stairs, or follow a quick stretch video.
 
-    Privacy policy: https://tangigz.github.io/micro.breaks.app/privacy.html
+    🧮 **Think twice before skipping.** You have to solve a few math challenges if you want to unlock Chrome instead of completing your five-minute break.
+
+    ## FITS YOUR WORKDAY
+
+    ⏰ **Your schedule, your rules.** Set your break frequency, working hours, days, and lunch break.
+
+    📅 **Meeting-safe.** Connect Google Calendar to avoid interruptions during meetings.
+
+    😴 **Off means off.** No breaks outside your working hours or on your days off.
 
 **Images**
 
 | Image | File |
 |---|---|
 | Store icon, 128 × 128 | `docs/store/icon-128.png` (also inside the zip) |
-| Screenshots, 1280 × 800 | `docs/store/screenshot-1-new-tab.png` to `screenshot-5-skip.png` |
+| Screenshots, 1280 × 800 | The five captioned screenshots made by Tangi: `docs/store/screenshot-battery.png`, `screenshot-time-to-move.png`, `screenshot-timer.png`, `screenshot-skip.png`, `screenshot-schedule.png` |
 | Small promo tile, 440 × 280 | `docs/store/promo-440x280.png` |
 
-Regenerate them with `npm run build && node scripts/store-screens.mjs`.
+The screenshots were composed by hand, with a caption above each screen. `node scripts/store-screens.mjs` (after `npm run build`) takes plain 1280 × 800 captures of the main screens into `test-results/store/`, as raw material, and remakes the promo tile.
 
 **Homepage URL:** https://tangigz.github.io/micro.breaks.app/
 
@@ -101,27 +99,22 @@ Regenerate them with `npm run build && node scripts/store-screens.mjs`.
 
 ## Test instructions tab
 
-The reviewer needs no account. Paste:
+Username and password: empty, there is no login. The field for instructions takes 500 characters at most. Pasted:
 
-    No login is needed.
-    1. After install, a welcome page opens. Enter any email address and click "Let's start".
-    2. Click "Continue", then in step 2 click "Allow", "Send a test" and "Yes, it stayed", then in step 3 click "Done", then "Start moving".
-    3. Open a new tab: it shows the battery and the time to the next break.
-    4. Breaks only happen during the working hours shown on the chip under the countdown (9:00 to 18:00 by default). If the new tab says "Done for today", click that chip and move the end of the day later, then go back.
-    5. Click "Start a break now". The "Time to move." tab opens and Chrome is kept on it: switching to another tab brings you back.
-    6. Click "Start mission". The countdown only runs while the keyboard and mouse are untouched, so leave the computer idle for 5 minutes to complete it, or click "Skip (it'll cost you)" and solve the challenge to leave.
-    Google Calendar is optional: "Connect Google Calendar" on the timer screen asks for read-only free/busy access.
+    No login needed.
+    1. Welcome page: enter any email, click Let's start, Continue, Allow, Send a test, Yes it stayed, Done, Start moving.
+    2. Open a new tab: battery and countdown. If it says "Done for today", click the timer chip and move the end of day later (breaks only run in working hours, 9:00-18:00 by default).
+    3. Click "Start a break now": Chrome is kept on the mission tab.
+    4. Click Start mission, then stay idle 5 min, or click "Skip (it'll cost you)".
+    Google Calendar is optional.
 
 ## Distribution tab
 
 **Visibility:** Public. **Regions:** all. **Pricing:** free.
 
-## Order of operations
+## Status
 
-1. Done: the zip was uploaded as a draft, the store assigned the ID above, and a Google client of type "Chrome extension" was created for it.
-2. Upload the current `micro.breaks-store.zip` under Package › Upload new package.
-3. In Google Auth Platform › Audience, click "Publish app", so that accounts outside the test-user list can connect.
-4. Fill the tabs above, then submit for review.
+Submitted for review on 10 October 2026, as version 0.1.4. Uploading a new package while it is in review restarts the review.
 
 ## Known review risks
 

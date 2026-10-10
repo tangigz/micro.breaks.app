@@ -1,5 +1,7 @@
-// Takes the Chrome Web Store images from the built extension: node scripts/store-screens.mjs
-// Run `npm run build` first. Writes 1280 × 800 screenshots and the 440 × 280 promo tile to docs/store/.
+// Takes plain 1280 × 800 captures of the main screens from the built extension, as raw material
+// for the store screenshots, and remakes the 440 × 280 promo tile: node scripts/store-screens.mjs
+// Run `npm run build` first. Captures go to test-results/store/ (not kept in git); the screenshots
+// on the store, in docs/store/, are composed by hand with a caption above each screen.
 import { chromium } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -22,7 +24,7 @@ const send = (input) => message({ mb: 'dispatch', input });
 const advance = (min) => message({ mb: 'dev_advance', ms: min * 60_000 });
 const shot = async (page, name) => {
   await page.waitForTimeout(1400);
-  await page.screenshot({ path: `${OUT}/${name}.png` });
+  await page.screenshot({ path: `test-results/store/${name}.png` });
   console.log('✔', name);
 };
 const missionTab = async () => {
