@@ -76,7 +76,9 @@ Replaces the design's tray of five values under the sentence, on the setup step 
 
 ## Chrome Web Store (9 October 2026)
 
-Decided: publish as Public, keep the video missions, keep the email for marketing, open Google Calendar to everyone.
+Decided: publish as Public, keep the video missions, keep the email, open Google Calendar to everyone.
+
+**What the email is for (10 October 2026):** only to recognise the installation and to contact the user about their feedback. Not for news, marketing or anything else. The welcome screen, the privacy policy, the README and the store listing all say exactly this. Using the addresses for a newsletter later would break that promise and the store's Limited Use policy; it would need a new, separate opt-in first.
 
 - **No "tabs" permission.** The extension finds its own pages with `runtime.getContexts`. Tab URLs are hidden from it, and Chrome no longer warns about browsing history at install.
 - **Two builds.** `npm run package` makes the tester zip (fixed ID) and `micro.breaks-store.zip` (no key; the store assigns the ID). The video review page is in neither.

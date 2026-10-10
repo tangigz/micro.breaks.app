@@ -43,7 +43,7 @@ Upload `.output/micro.breaks-store.zip`, built by `npm run package`. It has no f
 
     WHAT IT ASKS FOR, AND WHY
 
-    • Your email, on the welcome screen, to send you news about micro.breaks.
+    • Your email, on the welcome screen, only to recognise your installation and to contact you about your feedback.
     • A few usage events (setup finished, missions started, completed or skipped, timer changes), to improve it.
     • It never reads the sites you visit, your tabs or your history.
     • If you connect Google Calendar, it reads only when you are busy, never titles or guests, and that stays on your computer.
@@ -89,7 +89,7 @@ Regenerate them with `npm run build && node scripts/store-screens.mjs`.
 
 **Data usage: what is collected**
 
-- [x] Personally identifiable information (the email address)
+- [x] Personally identifiable information (the email address, used only to recognise the installation and to contact the user about their feedback)
 - [x] User activity (which missions were started, completed or skipped inside the extension; no clicks, keystrokes or browsing activity)
 - [ ] Health information, financial information, authentication information, personal communications, location, web history, website content: none
 
@@ -109,6 +109,6 @@ Regenerate them with `npm run build && node scripts/store-screens.mjs`.
 
 ## Known review risks
 
-- **Email used for marketing.** The store's Limited Use policy allows data that is "necessary for the extension's disclosed single purpose". A required email for news is the weakest point of this submission. Making it optional would remove the risk.
+- **The required email.** It is used only to recognise the installation and to contact the user about their feedback, which is tied to improving the extension, and this is said on the welcome screen and in the privacy policy. A reviewer may still ask why it is required to use the product. Making it optional would remove the question.
 - **The lock.** It is the product, and it is described first in the listing. A reviewer may still read "minimal distractions" strictly.
 - **The Referer header for YouTube.** Disclosed in the justification above.
