@@ -4,6 +4,8 @@ Everything to paste into the developer dashboard. The texts must stay in line wi
 
 ## Package
 
+The item's ID on the store is `fmdmmobegbmccnkioajjlcfjcfjmkgck`. The Google client for that ID is set in `wxt.config.ts`.
+
 Upload `.output/micro.breaks-store.zip`, built by `npm run package`. It has no fixed ID: the store assigns one.
 
 ## Store listing tab
@@ -116,9 +118,10 @@ The reviewer needs no account. Paste:
 
 ## Order of operations
 
-1. Upload the zip as a draft. The dashboard shows the item ID.
-2. In Google Cloud, create a second OAuth client of type "Chrome extension" for that ID. Put its client ID in `wxt.config.ts` (the `STORE` branch of `GOOGLE_CLIENT_ID`), rebuild with `npm run package` and upload the new zip.
-3. Fill the tabs above, then submit for review.
+1. Done: the zip was uploaded as a draft, the store assigned the ID above, and a Google client of type "Chrome extension" was created for it.
+2. Upload the current `micro.breaks-store.zip` under Package › Upload new package.
+3. In Google Auth Platform › Audience, click "Publish app", so that accounts outside the test-user list can connect.
+4. Fill the tabs above, then submit for review.
 
 ## Known review risks
 

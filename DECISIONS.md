@@ -81,6 +81,7 @@ Decided: publish as Public, keep the video missions, keep the email, open Google
 **What the email is for (10 October 2026):** only to recognise the installation and to contact the user about their feedback. Not for news, marketing or anything else. The welcome screen, the privacy policy, the README and the store listing all say exactly this. Using the addresses for a newsletter later would break that promise and the store's Limited Use policy; it would need a new, separate opt-in first.
 
 - **No "tabs" permission.** The extension finds its own pages with `runtime.getContexts`. Tab URLs are hidden from it, and Chrome no longer warns about browsing history at install.
+- **Store item ID:** `fmdmmobegbmccnkioajjlcfjcfjmkgck`. It has its own Google client; the tester build keeps the first one.
 - **Two builds.** `npm run package` makes the tester zip (fixed ID) and `micro.breaks-store.zip` (no key; the store assigns the ID). The video review page is in neither.
 - **Consent before anything is sent.** The welcome screen says what is collected and links to the privacy policy. Events, the install event included, wait in the queue until the user starts.
 - **Setup text by platform.** The notification and login-item instructions are written for macOS, for Windows, and generically for anything else.
