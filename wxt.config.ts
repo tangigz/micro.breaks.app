@@ -12,7 +12,7 @@ const STORE = process.env.MB_STORE === '1';
  * extension ID each. If left empty, "Connect Google Calendar" says it is not set up.
  */
 const GOOGLE_CLIENT_ID: string = STORE
-  ? '' // To create once the store has assigned the item its ID
+  ? '541895009206-0iua6eao8maq72nnatq8hg7l6d1ci8ef.apps.googleusercontent.com' // For the store's item, fmdmmobegbmccnkioajjlcfjcfjmkgck
   : '541895009206-9g6rhs77sr2l74e2b53uq3mei1d7srsd.apps.googleusercontent.com';
 
 /** Public key that fixes the extension ID to hkgliedfglkhagpbpljdbfabimefocak, which the OAuth client is tied to. */
