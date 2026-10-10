@@ -55,10 +55,10 @@ Upload `.output/micro.breaks-store.zip`, built by `npm run package`. It has no f
 | Image | File |
 |---|---|
 | Store icon, 128 × 128 | `docs/store/icon-128.png` (also inside the zip) |
-| Screenshots, 1280 × 800 | `docs/store/screenshot-1-new-tab.png` to `screenshot-5-skip.png` |
+| Screenshots, 1280 × 800 | The five captioned screenshots made by Tangi: `docs/store/screenshot-battery.png`, `screenshot-time-to-move.png`, `screenshot-timer.png`, `screenshot-skip.png`, `screenshot-schedule.png` |
 | Small promo tile, 440 × 280 | `docs/store/promo-440x280.png` |
 
-Regenerate them with `npm run build && node scripts/store-screens.mjs`.
+The screenshots were composed by hand, with a caption above each screen. `node scripts/store-screens.mjs` (after `npm run build`) takes plain 1280 × 800 captures of the main screens into `test-results/store/`, as raw material, and remakes the promo tile.
 
 **Homepage URL:** https://tangigz.github.io/micro.breaks.app/
 

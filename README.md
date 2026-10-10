@@ -1,10 +1,14 @@
 # 🔋 micro.breaks
 
-**Move a little, every hour you sit.**
+**Sitting all day in front of your computer?**
 
-A battery on every new tab drains while you sit. When it's empty, Chrome locks onto one short mission that gets you out of your chair. Do it, and you're recharged.
+micro.breaks helps you build regular movement breaks into your workday, at the office or at home, so you can stay energized, focused, and feel better in your body.
 
-![The new tab: a battery and the time to your next break](docs/screens/new-tab.png)
+Your battery drains as you sit. When it's empty, it's time to move. Complete a five-minute mission to unlock Chrome and get back to work.
+
+**No more snoozed reminders. Just five minutes to move, recharge, and get back to work.**
+
+![Watch your battery drain while you sit](docs/screens/battery.png)
 
 ## 🚀 Install in 2 minutes
 
@@ -18,15 +22,22 @@ You need a **Mac** and **Google Chrome**. micro.breaks is still in testing, so i
 
 If Chrome asks whether to keep the new tab page, say yes. That's where the battery lives.
 
-## 🏃 How it works
+## 🏃 Make your breaks happen
 
-![Time to move: one mission, and Chrome is locked until you move](docs/screens/time-to-move.png)
+- 🔋 **See your sitting time add up.** Your new tab shows a battery that drains as you sit, counting down to your next movement break.
+- 🔒 **Your break can't be ignored.** When it's time to move, Chrome keeps you on your break mission for five minutes, so you can't simply switch tabs and carry on working.
+- 🚶 **Five-minute missions to get you moving.** We suggest what to do during your day: take a walk, grab some water, climb the stairs, or follow a quick stretch video.
+- 🧮 **Think twice before skipping.** You have to solve a few math challenges if you want to unlock Chrome instead of completing your five-minute break.
 
-- 🔋 **The battery drains** while you sit, during the working hours you set.
-- 🔒 **When it's empty, Chrome locks** onto one mission: a walk, a glass of water, a short stretch video. Your other apps are not blocked.
-- ⚡ **Move, and it recharges.** Five minutes away from the keyboard does it.
-- 🧮 **Really can't right now?** "Skip (it'll cost you)" lets you out, after a few sums or a sentence to type.
-- 😴 **Quiet the rest of the time:** nothing outside your hours, at lunch, or on days off.
+![Your break won't go away until you take it](docs/screens/time-to-move.png)
+
+## 🗓️ Fits your workday
+
+- ⏰ **Your schedule, your rules.** Set your break frequency, working hours, days, and lunch break.
+- 📅 **Meeting-safe.** Connect Google Calendar to avoid interruptions during meetings.
+- 😴 **Off means off.** No breaks outside your working hours or on your days off.
+
+![Your hours, your days, your meetings](docs/screens/schedule.png)
 
 ## 💡 Good to know
 
