@@ -24,7 +24,9 @@ export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   manifest: {
     name: 'micro.breaks',
-    description: 'Move a little, every hour you sit.',
+    // Shown as the summary on the Chrome Web Store, which reads it from here. 132 characters at most.
+    description:
+      "Move a little, every hour you sit. A battery drains on your new tab; when it's empty, Chrome locks until you take a short break.",
     ...(STORE ? {} : { key: KEY }),
     permissions: ['idle', 'alarms', 'notifications', 'storage', 'declarativeNetRequestWithHostAccess', 'identity'],
     // Video missions embed YouTube (src/background/youtube.ts); meetings come from Google Calendar
