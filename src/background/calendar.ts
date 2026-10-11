@@ -55,7 +55,12 @@ export async function connectCalendar(now: number): Promise<string | undefined> 
     }
     await refreshCalendar(now);
   } catch (error) {
-    return error instanceof Error ? error.message : 'Could not connect to Google Calendar.';
+    // Google's own wording ("OAuth2 request failed: … bad client id …") means nothing to a user:
+    // keep it for the console and say something plain on the screen
+    console.error('[micro.breaks] calendar connection failed', error);
+    const detail = error instanceof Error ? error.message : '';
+    if (/did not approve|not approve|cancel|closed/i.test(detail)) return 'Not connected. You can try again whenever you like.';
+    return 'Could not connect to Google Calendar. Please try again in a moment.';
   }
 }
 

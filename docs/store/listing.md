@@ -4,7 +4,7 @@ Everything to paste into the developer dashboard. The texts must stay in line wi
 
 ## Package
 
-The item's ID on the store is `fmdmmobegbmccnkioajjlcfjcfjmkgck`. The Google client for that ID is set in `wxt.config.ts`.
+The published item's ID on the store is `ldieiojondcbnfaefdklpifeiamnpmnj`. The Google client for that ID is set in `wxt.config.ts`. (An earlier draft item, `fmdmmobegbmccnkioajjlcfjcfjmkgck`, was never published; 0.1.4 went live carrying the client made for it, so Calendar could not connect until 0.1.5.)
 
 Upload `.output/micro.breaks-store.zip`, built by `npm run package`. It has no fixed ID: the store assigns one.
 
@@ -114,7 +114,9 @@ Username and password: empty, there is no login. The field for instructions take
 
 ## Status
 
-Submitted for review on 10 October 2026, as version 0.1.4. Uploading a new package while it is in review restarts the review.
+- 0.1.4 was submitted on 10 October 2026 and published on 11 October 2026: https://chromewebstore.google.com/detail/microbreaks/ldieiojondcbnfaefdklpifeiamnpmnj
+- 0.1.5 fixes Google Calendar in the store version (the client now matches the published item) and replaces Google's raw error text with a plain sentence.
+- Uploading a new package sends the item back through review; the live version stays up meanwhile.
 
 ## Known review risks
 
