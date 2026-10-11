@@ -6,7 +6,8 @@
 <title>micro.breaks · Stop sitting. Start moving.</title>
 <meta name="description" content="A Chrome extension that turns five-minute breaks into a habit you can’t simply snooze away. When your battery hits zero, Chrome locks until you move.">
 <link rel="canonical" href="https://tangigz.github.io/micro.breaks.app/">
-<meta name="theme-color" content="#0B0B0C">
+<meta name="theme-color" content="#FFFFFF">
+<script>try{if(localStorage.getItem('mb-theme')==='dark')document.documentElement.style.background='#0B0B0C'}catch(e){}</script>
 <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
 <link rel="icon" type="image/png" sizes="128x128" href="store/icon-128.png">
 <link rel="apple-touch-icon" href="store/icon-128.png">
@@ -26,7 +27,7 @@
 <link rel="preload" href="assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 @font-face{font-family:Inter;font-style:normal;font-weight:100 900;font-display:swap;src:url(assets/fonts/inter-latin-wght-normal.woff2) format('woff2')}
-html{background:#0B0B0C}
+html{background:#FFFFFF}
 body{margin:0}
 .mb{--bg:#0B0B0C;--raised:#1C1C1E;--pill:#2C2C2E;--ink:#F5F5F7;--ink2:#A1A1A6;--green:#6FCF7A;--amber:#FFC56B;--coral:#FF8A5B;--line:rgba(255,255,255,.1);--btn-bg:#F5F5F7;--btn-ink:#0B0B0C;--nav:rgba(11,11,12,.82);--dim:rgba(245,245,247,.2);--grad:linear-gradient(100deg,#E2FFB0 0%,#9BE58A 42%,#3DDC84 100%);--grad-glow:rgba(61,220,132,.38);font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;color-scheme:dark}
 .mb.light{--bg:#FFFFFF;--raised:#F4F4F6;--pill:#E6E6EA;--ink:#111111;--ink2:#55555B;--green:#2E7D32;--amber:#9A5B00;--coral:#B4441A;--line:rgba(0,0,0,.12);--btn-bg:#111111;--btn-ink:#FFFFFF;--nav:rgba(255,255,255,.85);--dim:rgba(17,17,17,.18);--grad:linear-gradient(100deg,#2E7D32 0%,#1B8F4E 55%,#0E6E46 100%);--grad-glow:rgba(61,220,132,.26);--grad-glow2:rgba(61,220,132,0);color-scheme:light}
@@ -910,7 +911,7 @@ class Component extends DCLogic {
   }
   renderVals() {
     const s = this.state || {};
-    const theme = s.theme || this.props.theme || 'dark';
+    const theme = s.theme || this.props.theme || 'light';
     const live = this.props.storeLive ?? true;
     const running = !!this._running;
     const now = s.now || Date.now();
@@ -963,7 +964,7 @@ class Component extends DCLogic {
     };
   }
 }
-mountPage(Component, {"theme": "dark", "storeLive": true, "animate": true});
+mountPage(Component, {"theme": "light", "storeLive": true, "animate": true});
 })();
 </script>
 </body>
