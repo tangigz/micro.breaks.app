@@ -30,3 +30,15 @@ This checks out pull request 12, installs dependencies and opens the test browse
 ## Known tooling vulnerabilities
 
 `npm audit` reports 4 high-severity findings, all from `node-forge`, which `web-ext` (the tool that launches the test browser) pulls in. No fixed version of `node-forge` exists yet. It runs only on the developer's machine and is not part of the extension: `npm audit --omit=dev` reports none. `shell-quote`, from the same tool, is pinned to a fixed version in `package.json` under `overrides`.
+
+## The landing page and search engines
+
+`docs/index.html` draws its content with JavaScript. So that crawlers which don't run JavaScript still read the whole page, it also holds a static copy of the rendered page inside `<div id="app">`, which the page's script replaces with the live version on load.
+
+After any change to the landing page, refresh that copy:
+
+```bash
+node scripts/prerender-landing.mjs
+```
+
+It needs the Playwright browser (`npx playwright install chromium`) and is safe to run more than once.
