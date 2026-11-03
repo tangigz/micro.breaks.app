@@ -1,12 +1,15 @@
 import { useEffect } from 'react';
 import { send } from '@/data/client';
 import { type Break, mission, type State } from '@/engine';
+import { useDemoMode } from '@/ui/demoMode';
 import { missionArt } from '@/ui/missionArt';
 
 /** "Time to move." One mission, one primary pill, Enter to start. The only exit is a quiet link that costs effort. */
 export function Prompt({ state, b }: { state: State; b: Break }) {
   const m = mission(b.missionId);
   const art = missionArt(m);
+  // Demo mode (dev builds): switch as often as wanted, to film every mission.
+  const demo = useDemoMode();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -56,7 +59,7 @@ export function Prompt({ state, b }: { state: State; b: Break }) {
               </svg>
               Start mission
             </button>
-            {b.switched ? (
+            {b.switched && !demo ? (
               <button
                 disabled
                 aria-label="Switched. One switch per break."
@@ -79,7 +82,7 @@ export function Prompt({ state, b }: { state: State; b: Break }) {
             ) : (
               <button
                 className="flex h-14 cursor-pointer items-center gap-2 rounded-full bg-pill px-[22px] text-[15px] font-medium text-ink"
-                onClick={() => void send({ type: 'switch_mission' })}
+                onClick={() => void send({ type: 'switch_mission', unlimited: demo })}
               >
                 <svg
                   width="18"

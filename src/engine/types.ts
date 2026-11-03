@@ -97,7 +97,8 @@ export type Input =
   | { type: 'gap_answer'; moved: boolean }
   | { type: 'start_break_now' }
   | { type: 'cancel_break' }
-  | { type: 'switch_mission' }
+  /** `unlimited`: demo mode in dev builds (filming every mission); never sent by the built extension. */
+  | { type: 'switch_mission'; unlimited?: boolean }
   | { type: 'start_mission'; videoDurationMs?: number }
   | { type: 'video_duration'; ms: number }
   | { type: 'video_done' }

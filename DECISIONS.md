@@ -2,6 +2,11 @@
 
 Decisions taken after `docs/spec.html` (v3, 3 October 2026). Where they differ from the spec, this file wins.
 
+## 3 November 2026
+
+- **Working hours can be set at any quarter hour, 0:00 to 24:00** (was 6:00–22:00), so the extension can be tested late in the evening. An end of day at 24:00 ends with the new day at midnight.
+- **Demo mode** (dev builds only, for filming): a **Demo mode** button in the Test mode bar hides the bar and lets **Switch mission** be used as often as wanted, through the whole shuffled deck. Ctrl+Shift+D toggles it on any micro.breaks page. The built extension keeps one switch per break.
+
 ## 4 October 2026
 
 - **Mission length is 5 min. No choice.** The 5 / 10 / 15 switch on the prompt is removed. One mission, one length.

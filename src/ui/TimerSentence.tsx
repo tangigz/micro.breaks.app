@@ -15,7 +15,8 @@ const LABELS: Record<Field, string> = {
 };
 
 const INTERVALS = [30, 45, 60, 75, 90];
-const TIMES = Array.from({ length: (22 - 6) * 4 + 1 }, (_, i) => 6 * 60 + i * 15);
+/** Every quarter hour of the day, 0:00 to 24:00 (midnight, as an end of day). */
+const TIMES = Array.from({ length: 24 * 4 + 1 }, (_, i) => i * 15);
 
 /** The values a field can take. Times keep their order: start, lunch start, lunch end, end. */
 function options(field: Field, s: Settings): number[] {

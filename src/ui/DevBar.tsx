@@ -1,6 +1,7 @@
 import { browser } from 'wxt/browser';
 import { batteryLevel, type Input, type State } from '@/engine';
 import type { Message } from '@/data/client';
+import { setDemoMode, useDemoMode } from './demoMode';
 
 const message = (m: Message) => void browser.runtime.sendMessage(m);
 const act = (input: Input) => message({ mb: 'dispatch', input });
@@ -17,7 +18,9 @@ const time = (ts: number | null) =>
 
 /** Test mode, dev builds only: plays time forward and fakes stepping away. Never in the built extension. */
 export function DevBar({ state, now }: { state: State; now: number }) {
-  if (!import.meta.env.DEV) return null;
+  const demo = useDemoMode();
+  // Demo mode hides the bar for filming; Ctrl+Shift+D brings it back.
+  if (!import.meta.env.DEV || demo) return null;
   const b = state.break;
   const facts = [
     `clock ${time(now)}`,
@@ -55,6 +58,13 @@ export function DevBar({ state, now }: { state: State; now: number }) {
         <a className={`${button} inline-flex items-center no-underline`} href="/videos.html">
           Videos
         </a>
+        <button
+          className={button}
+          title="For filming: hides this bar and allows unlimited mission switches. Ctrl+Shift+D brings the bar back."
+          onClick={() => setDemoMode(true)}
+        >
+          Demo mode
+        </button>
         <button className={button} onClick={() => void reset()}>
           Reset
         </button>

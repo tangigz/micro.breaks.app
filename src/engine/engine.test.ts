@@ -389,6 +389,17 @@ describe('the break', () => {
     expect(sim.state.break!.missionId).toBe(second);
   });
 
+  it('demo mode switches the mission as often as asked, through the whole deck', () => {
+    const sim = working();
+    sim.wait(60);
+    const seen = [sim.state.break!.missionId];
+    for (let i = 0; i < 6; i++) {
+      sim.send({ type: 'switch_mission', unlimited: true });
+      seen.push(sim.state.break!.missionId);
+    }
+    expect(new Set(seen).size).toBe(7);
+  });
+
   it('only counts down while the user is away, crediting the idle detection delay', () => {
     const sim = working();
     sim.wait(60);

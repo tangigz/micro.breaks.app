@@ -261,8 +261,8 @@ export function step(prev: State, input: Input, now: number): StepResult {
       break;
 
     case 'switch_mission':
-      // Switch swaps the mission once per break
-      if (b?.phase === 'prompt' && !b.switched) {
+      // Switch swaps the mission once per break (as often as wanted in demo mode)
+      if (b?.phase === 'prompt' && (!b.switched || input.unlimited)) {
         const from = b.missionId;
         b.missionId = draw(s);
         b.switched = true;
