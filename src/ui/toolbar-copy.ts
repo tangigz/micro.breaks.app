@@ -71,12 +71,12 @@ export function popupCopy(view: ToolbarView, settings: Settings, now: number): P
       };
     case 'seated':
     case 'last_five':
-      return { eyebrow: 'Next break in', eyebrowTone: 'ink', headline: minutesLeft(view.nextInMs), big: true, line: since, action: 'start' };
+      return { eyebrow: 'Next break in', eyebrowTone: 'ink', headline: clock(view.nextInMs), big: true, line: since, action: 'start' };
     case 'skipped':
       return {
         eyebrow: 'Skipped · Next break in',
         eyebrowTone: 'neg',
-        headline: minutesLeft(view.nextInMs),
+        headline: clock(view.nextInMs),
         big: true,
         line: since,
         action: 'start',

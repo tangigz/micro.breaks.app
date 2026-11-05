@@ -97,15 +97,13 @@ export function toolbarView(s: State, now: number): ToolbarView {
     }
   })();
 
-  // From install until the first break prompt, the popup welcomes instead of counting down. Only
-  // its words change: the battery, the icon and the pulse stay those of the day. Lunch, the end
-  // of the day and days off still say so.
-  if (!s.firstPromptShown && ['seated', 'last_five', 'meeting', 'before'].includes(regular.state)) {
+  // From install until the first break prompt, before the battery has started to drain, the
+  // popup welcomes instead of counting down. Once it drains, the popup counts down like the new tab.
+  const waiting = regular.state === 'before' || (regular.state === 'seated' && s.seatedSince == null);
+  if (!s.firstPromptShown && waiting) {
     const dayStart = tsAt(now, s.settings.dayStart);
     const firstBreakAt = s.dueAt ?? Math.max(now, dayStart) + interval;
-    // Before the day starts nothing drains yet: a full green battery, ready
-    const look = regular.state === 'before' ? { level: 100, tone: 'green' as const } : {};
-    return { ...regular, ...look, state: 'first_run', firstBreakAt };
+    return { ...regular, level: 100, tone: 'green', state: 'first_run', firstBreakAt };
   }
   return regular;
 }

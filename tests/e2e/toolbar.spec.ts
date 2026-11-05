@@ -40,7 +40,7 @@ test('seated: tooltip and popup follow the battery; Start a break now opens the 
   await engine.advance(18);
   await expect.poll(() => title(home)).toBe('micro.breaks · Next break in 42 min');
   const p = await popup(home, extensionId);
-  await expect(p.getByRole('timer')).toHaveText('42 min');
+  await expect(p.getByRole('timer')).toHaveText(/^4[12]:\d\d$/);
   await expect(p.getByText('18 min since your last active break')).toBeVisible();
   await expect(p.getByRole('button', { name: /Edit your movement timer/ })).toHaveText('Every 60 min · 9:00–18:00');
   await p.getByRole('button', { name: 'Start a break now' }).click();

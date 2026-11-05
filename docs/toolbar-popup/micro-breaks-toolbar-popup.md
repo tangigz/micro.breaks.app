@@ -8,12 +8,12 @@ Goal: people see their battery without clicking, and clicking the icon gives the
 
 The toolbar icon is the Glow icon, with its pill acting as the battery. It drains while the user sits, like the new tab battery.
 
-**Drawing** (64-unit artwork, scaled to 16 and 32 px with `OffscreenCanvas` in the service worker, then `chrome.action.setIcon({ imageData: { 16, 32 } })`):
+**Drawing** (64-unit artwork, scaled to 16 and 32 px with `OffscreenCanvas` in the service worker, then `chrome.action.setIcon({ imageData: { 16, 32 } })`). A slim outlined battery, like the popup's:
 
 - Tile: 64 × 64, corner radius 15, fill `#0B0B0C`.
-- Glow: radial gradient over the tile, centre 50% / 55%, radius 50%, the battery colour at 75% opacity fading to 0.
-- Pill track: rect (17, 5), 30 × 54, radius 15, fill `#48484A` (larger than the Glow icon's 22 × 42, so the battery reads at 16 px).
-- Charge: same pill, clipped, filled from the bottom to `height = 54 × level`. Vertical gradient from the battery colour lightened 55% toward white (top) to the battery colour (bottom).
+- Glow: radial gradient centred at (32, 36), radius 30, the battery colour at 50% opacity fading to 0.
+- Battery body: rect (21, 13), 22 × 42, radius 7, 3-unit outline in near-white; cap 10 × 3.5 above it.
+- Charge: inset 4 units inside the outline, radius 3.5, filled from the bottom by level; vertical gradient from the battery colour lightened 30% (top) to the battery colour (bottom). An empty battery keeps a 3-unit sliver.
 
 **Level and colour** (same rule as the new tab battery):
 
@@ -30,7 +30,7 @@ The toolbar icon is the Glow icon, with its pill acting as the battery. It drain
 | Lunch | Green, refilling |
 | Before hours, done for today, weekend | Grey `#8E8E93`, full, no glow |
 
-**Pulse in the last 5 minutes:** one beat every 1.6 s, eased in and out over 20 frames: the glow swells from dim (20%) to full and wider, the charge brightens about 45%, and the pill's track takes on 45% of the battery colour at the peak, so the whole battery lights up at 16 px. Run it with `setInterval` in the service worker only during those 5 minutes; each `setIcon` call keeps the worker alive. Stop it when the break prompt opens. If the worker still gets suspended, fall back to a static, brighter glow for those 5 minutes. Never use `setBadgeText`.
+**Pulse in the last 5 minutes:** a slow breath of the glow, 2 s, eased over 30 frames: the glow goes from 32% to 70% and the charge brightens slightly at the peak. Run it with `setInterval` in the service worker only during those 5 minutes; each `setIcon` call keeps the worker alive. Stop it when the break prompt opens. If the worker still gets suspended, fall back to a static, brighter glow for those 5 minutes. Never use `setBadgeText`.
 
 **Update cadence:** redraw the icon once a minute (`chrome.alarms`, period 1 min) and on every state change (break started, completed, skipped, meeting start or end, lunch, end of day).
 
@@ -50,8 +50,8 @@ The toolbar icon is the Glow icon, with its pill acting as the battery. It drain
 
 | State | Eyebrow | Headline | Line | Primary pill |
 |---|---|---|---|---|
-| Seated | NEXT BREAK IN | 23 min | **42 min** since your last active break | Start a break now |
-| Last 5 minutes | NEXT BREAK IN | 4 min | **56 min** since your last active break | Start a break now |
+| Seated | NEXT BREAK IN | 23:00, counting down to the second like the new tab | **42 min** since your last active break | Start a break now |
+| Last 5 minutes | NEXT BREAK IN | 3:18 | **56 min** since your last active break | Start a break now |
 | In a meeting | IN A MEETING | Until 11:30 | Your break waits until it ends. | Start a break now |
 | Break due | BREAK DUE (coral) | Time to move. | Chrome is locked until you move. | Go to your mission |
 | Lunch | LUNCH | Until 13:30 | Tracking paused. Your battery will be full. | none |
@@ -59,7 +59,7 @@ The toolbar icon is the Glow icon, with its pill acting as the battery. It drain
 | Weekend | SATURDAY | Weekend. | See you Monday at 9:00. | none |
 | First run | WELCOME | You're set. | First break at **10:12**. | How it works |
 | Before working hours | BEFORE WORKING HOURS | 9:00 | Your day starts at 9:00, at your first activity. | none |
-| Break skipped | SKIPPED · NEXT BREAK IN (coral) | 52 min | **1 h 08** since your last active break | Start a break now |
+| Break skipped | SKIPPED · NEXT BREAK IN (coral) | 52:00 | **1 h 08** since your last active break | Start a break now |
 | Break waiting for a meeting | BREAK DUE AT 11:05 (amber) | Until 11:30 | Your break is waiting. It opens when the meeting ends. | Start a break now |
 | Chrome was closed | CHROME CLOSED · 40 MIN (amber) | Did you step away? | No answer counts as seated. | Yes, I moved + No, I kept working |
 | Mission running, popup opened | MISSION · PAUSED (amber) | 3:12 left | Step away to continue. | Go to your mission |
@@ -74,7 +74,7 @@ Battery in the popup: same level and colour as the icon; grey and full for befor
 - Yes, I moved / No, I kept working: answer the "Did you step away?" question, as on the new tab.
 - Chip: opens the movement timer settings.
 
-**First run:** show it from install until the first break prompt fires (keep a `firstRunDone` flag in storage). It is what people see when they click the icon right after installing, so it must work before any tracking data exists. "First break at" = first activity time + interval, or 9:00 + interval if the user hasn't started yet.
+**First run:** show it from install until the first break prompt fires, as long as the battery hasn't started draining (then the popup counts down like the new tab) (keep a `firstRunDone` flag in storage). It is what people see when they click the icon right after installing, so it must work before any tracking data exists. "First break at" = first activity time + interval, or 9:00 + interval if the user hasn't started yet.
 
 ## 3. Right-click menu
 

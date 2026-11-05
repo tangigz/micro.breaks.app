@@ -662,16 +662,13 @@ describe('toolbar', () => {
     return sim;
   };
 
-  it('shows the first run from install until the first prompt, with the first break time', () => {
+  it('shows the first run from install until the battery starts to drain', () => {
     const early = new Sim(at(8, 30));
     expect(view(early)).toMatchObject({ state: 'first_run', firstBreakAt: at(10, 0), level: 100, tone: 'green' });
+    // Draining: the popup counts down like the new tab
     const sim = working();
     sim.wait(12);
-    expect(view(sim)).toMatchObject({ state: 'first_run', firstBreakAt: at(10, 0), tone: 'level', pulse: false });
-    // The icon follows the battery during the first run too
-    expect(view(sim).level).toBeCloseTo(batteryLevel(sim.state, sim.now));
-    sim.to(at(9, 56));
-    expect(view(sim)).toMatchObject({ state: 'first_run', pulse: true });
+    expect(view(sim)).toMatchObject({ state: 'seated', nextInMs: 48 * MIN, tone: 'level' });
     sim.to(at(10, 0));
     expect(view(sim).state).toBe('due');
     sim.doMission();
