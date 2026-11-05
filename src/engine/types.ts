@@ -61,6 +61,8 @@ export interface Outcome {
 export interface State {
   settings: Settings;
   setupDone: boolean;
+  /** A break prompt has opened at least once: until then the toolbar popup shows its first-run state. */
+  firstPromptShown: boolean;
   seed: number;
   /** Local day being tracked, YYYY-MM-DD. */
   day: string | null;

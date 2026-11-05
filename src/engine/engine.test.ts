@@ -4,6 +4,7 @@ import { MISSIONS } from './missions';
 import { SENTENCES } from './challenge';
 import { MIN } from './time';
 import type { Effect, Input, MathsChallenge, State } from './types';
+import { toolbarView } from './toolbar';
 import { batteryLevel, missionView, newTabView } from './view';
 
 /** Monday 5 October 2026, local time. */
@@ -649,5 +650,90 @@ describe('showing up', () => {
     const frozen = structuredClone(state);
     step(state, { type: 'setup_done' }, at(9, 1));
     expect(state).toEqual(frozen);
+  });
+});
+
+describe('toolbar', () => {
+  const view = (sim: Sim) => toolbarView(sim.state, sim.now);
+  /** A user past their first prompt. */
+  const seasoned = () => {
+    const sim = working();
+    sim.state = { ...sim.state, firstPromptShown: true };
+    return sim;
+  };
+
+  it('shows the first run from install until the first prompt, with the first break time', () => {
+    const early = new Sim(at(8, 30));
+    expect(view(early)).toMatchObject({ state: 'first_run', firstBreakAt: at(10, 0), level: 100, tone: 'green' });
+    const sim = working();
+    sim.wait(12);
+    expect(view(sim)).toMatchObject({ state: 'first_run', firstBreakAt: at(10, 0) });
+    sim.to(at(10, 0));
+    expect(view(sim).state).toBe('due');
+    sim.doMission();
+    expect(view(sim).state).toBe('seated');
+  });
+
+  it('drains like the new tab, and pulses in the last 5 minutes only', () => {
+    const sim = seasoned();
+    sim.wait(37);
+    expect(view(sim)).toMatchObject({ state: 'seated', nextInMs: 23 * MIN, pulse: false, tone: 'level' });
+    expect(view(sim).level).toBeCloseTo(batteryLevel(sim.state, sim.now));
+    sim.to(at(9, 55));
+    expect(view(sim)).toMatchObject({ state: 'last_five', pulse: true });
+    sim.to(at(10, 0));
+    expect(view(sim)).toMatchObject({ state: 'due', pulse: false, level: 0 });
+  });
+
+  it('a mission refills the battery; paused while the user is at the computer', () => {
+    const sim = seasoned();
+    sim.to(at(10, 0));
+    sim.send({ type: 'start_mission' });
+    expect(view(sim)).toMatchObject({ state: 'mission', tone: 'green', mission: { running: false } });
+    sim.send({ type: 'idle', state: 'locked' });
+    sim.wait(2);
+    const v = view(sim);
+    expect(v.mission?.running).toBe(true);
+    expect(v.level).toBeGreaterThan(0);
+  });
+
+  it('meeting, break held by a meeting, skipped', () => {
+    const meeting = seasoned();
+    meeting.send({ type: 'calendar', busyUntil: at(9, 30) });
+    meeting.wait(10);
+    expect(view(meeting)).toMatchObject({ state: 'meeting', meetingUntil: at(9, 30) });
+
+    const held = seasoned();
+    held.wait(50);
+    held.send({ type: 'calendar', busyUntil: at(10, 30) });
+    held.to(at(10, 5));
+    expect(view(held)).toMatchObject({ state: 'held', dueAt: at(10, 0), meetingUntil: at(10, 30), level: 0 });
+
+    const skipped = seasoned();
+    skipped.wait(63);
+    skipped.passSkip();
+    expect(view(skipped)).toMatchObject({ state: 'skipped', level: 0, nextInMs: 60 * MIN });
+  });
+
+  it('Chrome was closed: asks first', () => {
+    const sim = seasoned();
+    sim.wait(20);
+    sim.now += 40 * MIN;
+    sim.send({ type: 'startup' });
+    expect(view(sim)).toMatchObject({ state: 'gap', gapMs: 40 * MIN });
+  });
+
+  it('off hours: grey and full; lunch: green and full', () => {
+    const sim = seasoned();
+    sim.to(at(12, 45));
+    expect(view(sim)).toMatchObject({ state: 'lunch', level: 100, tone: 'green' });
+    sim.to(at(18, 30));
+    expect(view(sim)).toMatchObject({ state: 'done', level: 100, tone: 'grey' });
+    const before = new Sim(at(8, 0));
+    before.state = { ...before.state, firstPromptShown: true };
+    expect(view(before).state).toBe('before');
+    const saturday = new Sim(at(11, 0, 0, 10));
+    saturday.state = { ...saturday.state, firstPromptShown: true, settings: { ...saturday.state.settings, days: 'weekdays' } };
+    expect(view(saturday)).toMatchObject({ state: 'weekend', tone: 'grey' });
   });
 });

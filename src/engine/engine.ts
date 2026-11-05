@@ -21,6 +21,7 @@ export function initialState(now: number, seed: number): State {
   return {
     settings: { ...DEFAULT_SETTINGS },
     setupDone: false,
+    firstPromptShown: false,
     seed,
     day: null,
     dayStarted: false,
@@ -85,6 +86,7 @@ export function step(prev: State, input: Input, now: number): StepResult {
   };
 
   const openPrompt = (voluntary: boolean) => {
+    s.firstPromptShown = true;
     s.break = {
       phase: 'prompt',
       missionId: draw(s),

@@ -88,6 +88,19 @@ Decided: publish as Public, keep the video missions, keep the email, open Google
 - **Homepage and privacy policy** are `docs/index.html` and `docs/privacy.html`, to be served by GitHub Pages. The listing texts, permission justifications and images are in `docs/store/`.
 - Known review risks are listed at the end of `docs/store/listing.md`.
 
+## Toolbar icon, popup, menu and tooltip (5 November 2026)
+
+Brief and designs: `docs/toolbar-popup/`.
+
+- **The toolbar icon is the battery**, drawn live in the service worker: same level and colours as the new tab battery. Redrawn after every engine step and with the one-minute tick. The store icon and the manifest `icons` stay static.
+- **The pulse starts with the heads-up** (`headsUpMin`, 5 min) and stops when the prompt opens. It also runs in the last minutes after a skipped break. Never a badge.
+- **The popup follows the micro.breaks theme setting**, like every other page, not the system theme.
+- **13 popup states.** The 8 of the brief, plus before working hours, break skipped (empty battery), break waiting for a meeting (distinct from "In a meeting"), "Did you step away?" asked in the popup itself, and a mission in progress ("Mission · Paused" while you're at the computer).
+- **First run lasts until the first break prompt opens**, voluntary or not (`firstPromptShown` in the engine state). Someone who finished setup before this version has no first run.
+- **How it works opens the public site**, https://tangigz.github.io/micro.breaks.app/.
+- **Tooltips for the states the brief doesn't list**: "Break skipped, next break in 52 min", "Break waiting for your meeting, until 11:30", "Mission paused, 3:12 left", "Chrome was closed. Did you step away?", "Your day starts at 9:00", "Weekend", "First break at 10:12".
+- **New permission: `contextMenus`**, for the three right-click items. Chrome shows no warning for it.
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.
