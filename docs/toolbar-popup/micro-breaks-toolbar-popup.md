@@ -12,8 +12,8 @@ The toolbar icon is the Glow icon, with its pill acting as the battery. It drain
 
 - Tile: 64 × 64, corner radius 15, fill `#0B0B0C`.
 - Glow: radial gradient over the tile, centre 50% / 55%, radius 50%, the battery colour at 75% opacity fading to 0.
-- Pill track: rect (21, 11), 22 × 42, radius 11, fill `#48484A`.
-- Charge: same pill, clipped, filled from the bottom to `height = 42 × level`. Vertical gradient from the battery colour lightened 55% toward white (top) to the battery colour (bottom).
+- Pill track: rect (17, 5), 30 × 54, radius 15, fill `#48484A` (larger than the Glow icon's 22 × 42, so the battery reads at 16 px).
+- Charge: same pill, clipped, filled from the bottom to `height = 54 × level`. Vertical gradient from the battery colour lightened 55% toward white (top) to the battery colour (bottom).
 
 **Level and colour** (same rule as the new tab battery):
 
@@ -30,7 +30,7 @@ The toolbar icon is the Glow icon, with its pill acting as the battery. It drain
 | Lunch | Green, refilling |
 | Before hours, done for today, weekend | Grey `#8E8E93`, full, no glow |
 
-**Pulse in the last 5 minutes:** alternate two frames about every 0.8 s (normal glow, then glow and charge brightened about 45%), so one full beat is about 1.6 s. Run it with `setInterval` in the service worker only during those 5 minutes; each `setIcon` call keeps the worker alive. Stop it when the break prompt opens. If the worker still gets suspended, fall back to a static, brighter glow for those 5 minutes. Never use `setBadgeText`.
+**Pulse in the last 5 minutes:** one beat every 1.6 s, eased in and out over 20 frames: the glow swells from dim (20%) to full and wider, the charge brightens about 45%, and the pill's track takes on 45% of the battery colour at the peak, so the whole battery lights up at 16 px. Run it with `setInterval` in the service worker only during those 5 minutes; each `setIcon` call keeps the worker alive. Stop it when the break prompt opens. If the worker still gets suspended, fall back to a static, brighter glow for those 5 minutes. Never use `setBadgeText`.
 
 **Update cadence:** redraw the icon once a minute (`chrome.alarms`, period 1 min) and on every state change (break started, completed, skipped, meeting start or end, lunch, end of day).
 
@@ -44,8 +44,7 @@ The toolbar icon is the Glow icon, with its pill acting as the battery. It drain
 2. Status row: mini battery (48 × 88 body, 3 px ink border, radius 14, 22 × 6 cap, fill radius 8 with a soft halo in the battery colour) + an eyebrow (12 px / 500, caps, 0.08em tracking, ink-2) + a headline (44 px for "23 min", 30 to 34 px for the others, 700, −0.035em).
 3. One line, 15 / 20 px, ink-2, numbers in ink.
 4. One primary pill, full width, 44 px, ink fill. Hidden in some states.
-5. Schedule chip, 36 px, 1 px outline: timer icon + "Every 60 min · 9:00–18:00" (from the user's settings). Opens the settings.
-6. Footer, 44 px, 1 px top line: gear icon + "Settings". Opens the settings.
+5. Schedule chip, 36 px, 1 px outline: timer icon + "Every 60 min · 9:00–18:00" (from the user's settings). Opens the settings. It is the only way to the settings: the designs' "Settings" footer is left out, as a duplicate of the chip.
 
 **States:**
 
@@ -73,7 +72,7 @@ Battery in the popup: same level and colour as the icon; grey and full for befor
 - Go to your mission: focuses the locked mission tab.
 - How it works: opens the site, https://tangigz.github.io/micro.breaks.app/.
 - Yes, I moved / No, I kept working: answer the "Did you step away?" question, as on the new tab.
-- Chip and Settings: open the movement timer settings.
+- Chip: opens the movement timer settings.
 
 **First run:** show it from install until the first break prompt fires (keep a `firstRunDone` flag in storage). It is what people see when they click the icon right after installing, so it must work before any tracking data exists. "First break at" = first activity time + interval, or 9:00 + interval if the user hasn't started yet.
 

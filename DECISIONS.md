@@ -94,6 +94,9 @@ Brief and designs: `docs/toolbar-popup/`.
 
 - **The toolbar icon is the battery**, drawn live in the service worker: same level and colours as the new tab battery. Redrawn after every engine step and with the one-minute tick. The store icon and the manifest `icons` stay static.
 - **The pulse starts with the heads-up** (`headsUpMin`, 5 min) and stops when the prompt opens. It also runs in the last minutes after a skipped break. Never a badge.
+- **The icon's pill is larger than the Glow icon's** (30 × 54 on the 64 grid instead of 22 × 42): Chrome caps toolbar icons at 16 px, so filling more of the tile is the only way to make the battery bigger.
+- **The pulse is a smooth swell**, not two alternating frames: 20 eased frames per 1.6 s beat, the glow going from dim to full and wider, the charge brightening and the pill's track taking on the battery colour at the peak (at 16 px the glow alone is hard to see). The frames are drawn once per level and replayed.
+- **No "Settings" footer in the popup**: the schedule chip already opens the settings.
 - **The popup follows the micro.breaks theme setting**, like every other page, not the system theme.
 - **13 popup states.** The 8 of the brief, plus before working hours, break skipped (empty battery), break waiting for a meeting (distinct from "In a meeting"), "Did you step away?" asked in the popup itself, and a mission in progress ("Mission · Paused" while you're at the computer).
 - **First run lasts until the first break prompt opens**, voluntary or not (`firstPromptShown` in the engine state). Someone who finished setup before this version has no first run.

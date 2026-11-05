@@ -82,6 +82,6 @@ test('lunch and done for today: no button, the schedule stays one click away', a
   await expect(p.getByText('Until 13:30')).toBeVisible();
   await expect(p.getByRole('button', { name: 'Start a break now' })).toHaveCount(0);
   const settings = home.context().waitForEvent('page');
-  await p.getByRole('button', { name: 'Settings' }).click();
+  await p.getByRole('button', { name: /Edit your movement timer/ }).click();
   expect((await settings).url()).toContain('/settings.html');
 });

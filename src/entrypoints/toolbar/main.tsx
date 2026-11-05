@@ -6,7 +6,7 @@ import { Wordmark } from '@/ui/Header';
 import { Popup } from '@/ui/Popup';
 import { mount } from '@/ui/mount';
 import { tooltip } from '@/ui/toolbar-copy';
-import { drawIcon, iconLook } from '@/ui/toolbar-icon';
+import { BEAT_FRAMES, BEAT_MS, beat, drawIcon, iconLook } from '@/ui/toolbar-icon';
 import { FORCE_KEY, SAMPLE_STATES, sampleView } from '@/ui/toolbar-samples';
 import '@/ui/tokens.css';
 
@@ -33,16 +33,16 @@ const dayOf = (state: ToolbarState) => {
 
 function Icon({ view, size, scale }: { view: ToolbarView; size: number; scale: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const [bright, setBright] = useState(false);
+  const [frame, setFrame] = useState(0);
   useEffect(() => {
     if (!view.pulse) return;
-    const timer = setInterval(() => setBright((b) => !b), 800);
+    const timer = setInterval(() => setFrame((f) => (f + 1) % BEAT_FRAMES), BEAT_MS / BEAT_FRAMES);
     return () => clearInterval(timer);
   }, [view.pulse]);
   useEffect(() => {
     const ctx = ref.current!.getContext('2d')!;
-    drawIcon(ctx, size * scale, { ...iconLook(view), bright: view.pulse && bright });
-  }, [view, size, scale, bright]);
+    drawIcon(ctx, size * scale, { ...iconLook(view), pulse: view.pulse ? beat(frame) : undefined });
+  }, [view, size, scale, frame]);
   return <canvas ref={ref} width={size * scale} height={size * scale} style={{ width: size, height: size }} />;
 }
 
