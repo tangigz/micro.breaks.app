@@ -79,6 +79,7 @@ The screenshots were composed by hand, with a caption above each screen. `node s
 | `notifications` | Shows three notifications: 5 minutes before a break, when the break is due, and when the mission is completed. They reach the user when Chrome is behind another window. |
 | `storage` | Stores the user's timer settings, the current state of the timer and break, and a short queue of usage events waiting to be sent. |
 | `declarativeNetRequestWithHostAccess` | Two missions play a YouTube video inside an extension page. YouTube refuses embedded playback when the request has no Referer header, and extension pages send none. One session rule adds a Referer header (the extension's public source URL) to requests for `youtube-nocookie.com/embed/` frames that are opened by this extension itself. No other request, tab or site is touched. |
+| `contextMenus` | Adds three items to the menu shown when the user right-clicks the micro.breaks toolbar icon: Start a break now, Movement timer settings, How it works. The items appear only on the extension's own icon, not on web pages. |
 | `identity` | Used only if the user clicks "Connect Google Calendar": obtains a Google OAuth token for the read-only `calendar.freebusy` scope. |
 | Host `https://www.youtube-nocookie.com/*` | Needed for the rule above to apply to the embedded video frame. |
 | Host `https://www.googleapis.com/calendar/*` | Calls the Calendar free/busy endpoint to learn when the user is in a meeting, so that no break prompt is shown during it. Only busy time ranges are requested: no titles, attendees or descriptions. |
@@ -116,6 +117,7 @@ Username and password: empty, there is no login. The field for instructions take
 
 - 0.1.4 was submitted on 10 October 2026 and published on 11 October 2026: https://chromewebstore.google.com/detail/microbreaks/ldieiojondcbnfaefdklpifeiamnpmnj
 - 0.1.5 fixes Google Calendar in the store version (the client now matches the published item) and replaces Google's raw error text with a plain sentence.
+- 0.2.0 makes the toolbar icon a live battery (drawn by the extension, same level and colour as the new tab), adds a popup on click that mirrors the new tab, a tooltip with the time to the next break, and three right-click items. New permission: `contextMenus` (no install warning).
 - Uploading a new package sends the item back through review; the live version stays up meanwhile.
 
 ## Known review risks
