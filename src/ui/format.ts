@@ -1,3 +1,6 @@
+import type { Settings } from '@/engine';
+import { isWorkingDay } from '@/engine/time';
+
 const pad = (v: number) => String(v).padStart(2, '0');
 
 /** A countdown: 17:50. */
@@ -26,4 +29,14 @@ export function timeAt(ts: number): string {
 
 export function weekday(ts: number): string {
   return new Date(ts).toLocaleDateString('en', { weekday: 'long' });
+}
+
+const DAY = 24 * 60 * 60_000;
+
+/** The next working day by name, or "tomorrow". */
+export function nextDay(settings: Settings, now: number): string {
+  for (let i = 1; i <= 7; i++) {
+    if (isWorkingDay(settings, now + i * DAY)) return i === 1 ? 'tomorrow' : weekday(now + i * DAY);
+  }
+  return 'tomorrow';
 }

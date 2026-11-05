@@ -6,6 +6,7 @@ import { STATE_KEY } from './store';
 
 export type Message =
   | { mb: 'dispatch'; input: Input }
+  | { mb: 'open'; target: 'start' | 'mission' | 'settings' | 'how' }
   | { mb: 'dev_advance'; ms: number }
   | { mb: 'calendar'; connect: boolean }
   | { mb: 'track'; event: string; properties?: Record<string, unknown> };
@@ -19,6 +20,11 @@ export function track(event: string, properties?: Record<string, unknown>): void
 export async function setCalendar(connect: boolean): Promise<string | undefined> {
   const reply: { error?: string } = await browser.runtime.sendMessage({ mb: 'calendar', connect } satisfies Message);
   return reply.error;
+}
+
+/** Opens one of micro.breaks' pages, or the site, from the popup. */
+export function openPage(target: 'start' | 'mission' | 'settings' | 'how'): Promise<void> {
+  return browser.runtime.sendMessage({ mb: 'open', target } satisfies Message);
 }
 
 /** Sends an action to the engine, through the background. Resolves with the new state. */

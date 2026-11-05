@@ -20,7 +20,8 @@
   --neg: #ff8a5b;
 }
 
-:root[data-theme='light'] {
+:root[data-theme='light'],
+[data-theme='light'] {
   color-scheme: light;
   --bg: #ffffff;
   --raised: #f5f5f7;
@@ -96,7 +97,8 @@ body {
   --grey-glow: 0.1;
 }
 
-:root[data-theme='light'] {
+:root[data-theme='light'],
+[data-theme='light'] {
   --glow-min: 0.16;
   --glow-max: 0.4;
   --grey: 199 199 204;

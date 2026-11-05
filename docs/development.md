@@ -23,6 +23,7 @@ This checks out pull request 12, installs dependencies and opens the test browse
 
 - The test browser keeps its own profile in `.dev-profile`, separate from your Chrome.
 - A **Test mode** bar at the bottom of every micro.breaks page plays time forward (+1, +5, +25, +55 min), fakes stepping away and coming back, and resets everything. It only exists in `npm run dev`, never in the built extension.
+- **Toolbar** (in the Test mode bar) opens `toolbar.html`: every toolbar state side by side (icon at 2× and real size, tooltip, popup in dark and light), and a switch that forces one state on the real icon and popup. From the service worker console, `mb.force('last_five')` does the same and `mb.force(null)` goes back to the live state.
 - First time on a machine: `npx playwright install chromium`.
 
 `npm run dev` does the same for the branch you are on.

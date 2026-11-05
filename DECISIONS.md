@@ -88,6 +88,23 @@ Decided: publish as Public, keep the video missions, keep the email, open Google
 - **Homepage and privacy policy** are `docs/index.html` and `docs/privacy.html`, to be served by GitHub Pages. The listing texts, permission justifications and images are in `docs/store/`.
 - Known review risks are listed at the end of `docs/store/listing.md`.
 
+## Toolbar icon, popup, menu and tooltip (5 November 2026)
+
+Brief and designs: `docs/toolbar-popup/`.
+
+- **The toolbar icon is the battery**, drawn live in the service worker: same level and colours as the new tab battery. Redrawn after every engine step and with the one-minute tick. The store icon and the manifest `icons` stay static.
+- **The pulse starts with the heads-up** (`headsUpMin`, 5 min) and stops when the prompt opens. It also runs in the last minutes after a skipped break. Never a badge.
+- **The icon is a slim outlined battery** on the dark tile, like the popup's battery: a thin light outline and cap, the charge inset inside, a soft glow. It replaces the Glow icon's solid pill, which looked heavy in the toolbar (your review).
+- **The pulse is a slow, subtle breath** of the glow: 30 eased frames per 2 s, the charge brightening slightly at the peak. The frames are drawn once per level and replayed.
+- **No "Settings" footer in the popup**: the schedule chip already opens the settings.
+- **The popup follows the micro.breaks theme setting**, like every other page, not the system theme.
+- **13 popup states.** The 8 of the brief, plus before working hours, break skipped (empty battery), break waiting for a meeting (distinct from "In a meeting"), "Did you step away?" asked in the popup itself, and a mission in progress ("Mission · Paused" while you're at the computer).
+- **The popup counts down like the new tab** ("3:18", to the second), not in rounded minutes. The tooltip, updated every minute, keeps minutes ("Next break in 4 min").
+- **First run: from install until the first break prompt, as long as the battery hasn't started draining** (`firstPromptShown` in the engine state). Once it drains, the popup counts down like the new tab (your review: "You're set." next to a running countdown was out of sync). Someone who finished setup before this version has no first run.
+- **How it works opens the public site**, https://tangigz.github.io/micro.breaks.app/.
+- **Tooltips for the states the brief doesn't list**: "Break skipped, next break in 52 min", "Break waiting for your meeting, until 11:30", "Mission paused, 3:12 left", "Chrome was closed. Did you step away?", "Your day starts at 9:00", "Weekend", "First break at 10:12".
+- **New permission: `contextMenus`**, for the three right-click items. Chrome shows no warning for it.
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.

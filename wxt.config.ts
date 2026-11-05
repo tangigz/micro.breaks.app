@@ -28,7 +28,9 @@ export default defineConfig({
     description:
       "Move a little, every hour you sit. A battery drains on your new tab; when it's empty, Chrome locks until you take a short break.",
     ...(STORE ? {} : { key: KEY }),
-    permissions: ['idle', 'alarms', 'notifications', 'storage', 'declarativeNetRequestWithHostAccess', 'identity'],
+    // The toolbar icon is drawn live (src/background/toolbar.ts); the store icon stays static
+    action: { default_title: 'micro.breaks' },
+    permissions: ['idle', 'alarms', 'notifications', 'storage', 'declarativeNetRequestWithHostAccess', 'identity', 'contextMenus'],
     // Video missions embed YouTube (src/background/youtube.ts); meetings come from Google Calendar
     // (src/background/calendar.ts); usage events go to PostHog (src/background/analytics.ts)
     host_permissions: ['https://www.youtube-nocookie.com/*', 'https://www.googleapis.com/calendar/*', 'https://eu.i.posthog.com/*'],
@@ -38,11 +40,13 @@ export default defineConfig({
       : {}),
   },
   hooks: {
-    // The video review page is a test-mode tool: it does not ship
+    // The video review page and the toolbar states page are test-mode tools: they do not ship
     'entrypoints:found': (wxt, infos) => {
       if (wxt.config.mode !== 'production') return;
-      const i = infos.findIndex((e) => e.name === 'videos');
-      if (i >= 0) infos.splice(i, 1);
+      for (const name of ['videos', 'toolbar']) {
+        const i = infos.findIndex((e) => e.name === name);
+        if (i >= 0) infos.splice(i, 1);
+      }
     },
   },
   vite: () => ({ plugins: [tailwindcss()] }),

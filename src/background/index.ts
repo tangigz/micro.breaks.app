@@ -8,7 +8,9 @@ import { loadState, saveState } from '@/data/store';
 import { flushSoon, track } from './analytics';
 import { CALENDAR_ALARM, connectCalendar, disconnectCalendar, refreshCalendar, savedBusy } from './calendar';
 import { clearNotification, notify } from './notifications';
-import { HOME, inFront, MISSION, SETUP, show } from './tabs';
+import { HOME, inFront, MISSION, SETTINGS, SETUP, show } from './tabs';
+import { createMenu, type MenuTarget, SITE, updateToolbar } from './toolbar';
+import { FORCE_KEY } from '@/ui/toolbar-samples';
 import { allowYouTubeEmbeds } from './youtube';
 
 const TICK = 'tick';
@@ -85,6 +87,7 @@ async function run(input: Input, at?: number): Promise<State> {
     }
   }
   await sync(state);
+  await updateToolbar(state, now);
   return state;
 }
 
@@ -138,6 +141,14 @@ async function setCalendar(connect: boolean): Promise<string | undefined> {
   await dispatch({ type: 'tick' });
 }
 
+/** The popup's and the right-click menu's targets. */
+async function open(target: MenuTarget | 'mission'): Promise<void> {
+  if (target === 'start') await dispatch({ type: 'start_break_now' });
+  else if (target === 'mission') await show(MISSION);
+  else if (target === 'settings') await show(SETTINGS);
+  else await browser.tabs.create({ url: SITE });
+}
+
 /** Browser tests send idle changes by hand; the machine's real idle state must not interfere. */
 async function realIdleIgnored(): Promise<boolean> {
   return (await browser.storage.local.get('testIgnoreIdle')).testIgnoreIdle === true;
@@ -154,6 +165,7 @@ async function advance(ms: number): Promise<State> {
 
 export function start(): void {
   browser.runtime.onInstalled.addListener(({ reason }) => {
+    createMenu();
     if (reason !== 'install') return;
     track('extension_installed');
     void show(SETUP);
@@ -194,8 +206,25 @@ export function start(): void {
   browser.notifications.onClicked.addListener(onNotification);
   browser.notifications.onButtonClicked.addListener(onNotification);
 
+  browser.contextMenus.onClicked.addListener((info) => void open(info.menuItemId as MenuTarget));
+
+  // Test mode: a toolbar state forced from the Test mode bar or the console redraws at once
+  if (import.meta.env.DEV) {
+    browser.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && FORCE_KEY in changes) void dispatch({ type: 'tick' });
+    });
+    Object.assign(globalThis, {
+      mb: {
+        /** mb.force('last_five'), mb.force(null): see src/ui/toolbar-samples.ts for the states. */
+        force: (state: string | null) =>
+          state ? browser.storage.local.set({ [FORCE_KEY]: state }) : browser.storage.local.remove(FORCE_KEY),
+      },
+    });
+  }
+
   browser.runtime.onMessage.addListener((message: Message, _sender, respond) => {
     if (message?.mb === 'dispatch') void dispatch(message.input).then(respond);
+    else if (message?.mb === 'open') void open(message.target).then(() => respond());
     else if (message?.mb === 'dev_advance') void advance(message.ms).then(respond);
     else if (message?.mb === 'calendar') void setCalendar(message.connect).then((error) => respond({ error }));
     else if (message?.mb === 'track') void clockNow().then((now) => respond(track(message.event, message.properties, now)));

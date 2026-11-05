@@ -3,8 +3,9 @@ import { browser } from 'wxt/browser';
 export const HOME = '/newtab.html';
 export const MISSION = '/mission.html';
 export const SETUP = '/setup.html';
+export const SETTINGS = '/settings.html';
 
-type Path = typeof HOME | typeof MISSION | typeof SETUP;
+type Path = typeof HOME | typeof MISSION | typeof SETUP | typeof SETTINGS;
 
 /**
  * micro.breaks only ever needs to know about its own tabs, so it does not ask for the "tabs"

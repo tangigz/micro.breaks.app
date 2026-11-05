@@ -2,11 +2,8 @@ import type { ReactNode } from 'react';
 import calendar from '@/assets/emoji/calendar.png';
 import { send } from '@/data/client';
 import { type NewTabView, newTabView, type State } from '@/engine';
-import { isWorkingDay } from '@/engine/time';
 import { Battery, Halo } from '@/ui/Battery';
-import { clock, duration, timeAt, timeOfDay, weekday } from '@/ui/format';
-
-const DAY = 24 * 60 * 60_000;
+import { clock, duration, nextDay, timeAt, timeOfDay, weekday } from '@/ui/format';
 
 const eyebrow = 'text-[13px] leading-4 font-medium tracking-[0.08em] uppercase';
 const section = 'text-[22px] leading-[28px] font-semibold tracking-[-0.01em] text-ink-2';
@@ -37,14 +34,6 @@ function Quiet({ label, title, sub, big, attention }: { label: string; title: st
       <div className={`${section} mt-3 max-w-[540px] leading-[30px]`}>{sub}</div>
     </div>
   );
-}
-
-/** The next working day by name, or "tomorrow". */
-function nextDay(state: State, now: number): string {
-  for (let i = 1; i <= 7; i++) {
-    if (isWorkingDay(state.settings, now + i * DAY)) return i === 1 ? 'tomorrow' : weekday(now + i * DAY);
-  }
-  return 'tomorrow';
 }
 
 function Info({ state, now, view }: { state: State; now: number; view: NewTabView }) {
@@ -86,11 +75,11 @@ function Info({ state, now, view }: { state: State; now: number; view: NewTabVie
         <Quiet
           label={`${weekday(now)} · ${timeOfDay(settings.dayEnd)}`}
           title="Done for today."
-          sub={`See you ${nextDay(state, now)}.`}
+          sub={`See you ${nextDay(state.settings, now)}.`}
         />
       );
     case 'weekend':
-      return <Quiet label={weekday(now)} title="Weekend." sub={`See you ${nextDay(state, now)} at ${start}.`} />;
+      return <Quiet label={weekday(now)} title="Weekend." sub={`See you ${nextDay(state.settings, now)} at ${start}.`} />;
     case 'skipped':
       return (
         <Countdown
