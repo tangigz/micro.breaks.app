@@ -667,7 +667,11 @@ describe('toolbar', () => {
     expect(view(early)).toMatchObject({ state: 'first_run', firstBreakAt: at(10, 0), level: 100, tone: 'green' });
     const sim = working();
     sim.wait(12);
-    expect(view(sim)).toMatchObject({ state: 'first_run', firstBreakAt: at(10, 0) });
+    expect(view(sim)).toMatchObject({ state: 'first_run', firstBreakAt: at(10, 0), tone: 'level', pulse: false });
+    // The icon follows the battery during the first run too
+    expect(view(sim).level).toBeCloseTo(batteryLevel(sim.state, sim.now));
+    sim.to(at(9, 56));
+    expect(view(sim)).toMatchObject({ state: 'first_run', pulse: true });
     sim.to(at(10, 0));
     expect(view(sim).state).toBe('due');
     sim.doMission();

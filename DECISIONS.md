@@ -99,7 +99,7 @@ Brief and designs: `docs/toolbar-popup/`.
 - **No "Settings" footer in the popup**: the schedule chip already opens the settings.
 - **The popup follows the micro.breaks theme setting**, like every other page, not the system theme.
 - **13 popup states.** The 8 of the brief, plus before working hours, break skipped (empty battery), break waiting for a meeting (distinct from "In a meeting"), "Did you step away?" asked in the popup itself, and a mission in progress ("Mission · Paused" while you're at the computer).
-- **First run lasts until the first break prompt opens**, voluntary or not (`firstPromptShown` in the engine state). Someone who finished setup before this version has no first run.
+- **First run lasts until the first break prompt opens**, voluntary or not (`firstPromptShown` in the engine state). It only changes the popup's words ("You're set.", "First break at"): the battery, the icon and the pulse follow the day as usual. Full and green only before the day has started. Lunch, done for today and days off show their own state. Someone who finished setup before this version has no first run.
 - **How it works opens the public site**, https://tangigz.github.io/micro.breaks.app/.
 - **Tooltips for the states the brief doesn't list**: "Break skipped, next break in 52 min", "Break waiting for your meeting, until 11:30", "Mission paused, 3:12 left", "Chrome was closed. Did you step away?", "Your day starts at 9:00", "Weekend", "First break at 10:12".
 - **New permission: `contextMenus`**, for the three right-click items. Chrome shows no warning for it.

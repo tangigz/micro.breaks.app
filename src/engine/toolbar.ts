@@ -77,28 +77,35 @@ export function toolbarView(s: State, now: number): ToolbarView {
     };
   }
 
-  // From install until the first break prompt
-  if (!s.firstPromptShown) {
+  const last = s.dueAt != null && v.nextInMs <= lastMinutes(s) * 60_000;
+  const regular = ((): ToolbarView => {
+    switch (v.mode) {
+      case 'weekend':
+      case 'before':
+      case 'done':
+        return { ...base, state: v.mode, level: 100, tone: 'grey' };
+      case 'lunch':
+        return { ...base, state: 'lunch', level: 100, tone: 'green' };
+      case 'held':
+        return { ...base, state: 'held', level: 0 };
+      case 'skipped':
+        return { ...base, state: 'skipped', level: 0, pulse: last };
+      case 'meeting':
+        return { ...base, state: 'meeting' };
+      default:
+        return { ...base, state: last ? 'last_five' : 'seated', pulse: last };
+    }
+  })();
+
+  // From install until the first break prompt, the popup welcomes instead of counting down. Only
+  // its words change: the battery, the icon and the pulse stay those of the day. Lunch, the end
+  // of the day and days off still say so.
+  if (!s.firstPromptShown && ['seated', 'last_five', 'meeting', 'before'].includes(regular.state)) {
     const dayStart = tsAt(now, s.settings.dayStart);
     const firstBreakAt = s.dueAt ?? Math.max(now, dayStart) + interval;
-    return { ...base, state: 'first_run', level: 100, tone: 'green', firstBreakAt };
+    // Before the day starts nothing drains yet: a full green battery, ready
+    const look = regular.state === 'before' ? { level: 100, tone: 'green' as const } : {};
+    return { ...regular, ...look, state: 'first_run', firstBreakAt };
   }
-
-  const last = s.dueAt != null && v.nextInMs <= lastMinutes(s) * 60_000;
-  switch (v.mode) {
-    case 'weekend':
-    case 'before':
-    case 'done':
-      return { ...base, state: v.mode, level: 100, tone: 'grey' };
-    case 'lunch':
-      return { ...base, state: 'lunch', level: 100, tone: 'green' };
-    case 'held':
-      return { ...base, state: 'held', level: 0 };
-    case 'skipped':
-      return { ...base, state: 'skipped', level: 0, pulse: last };
-    case 'meeting':
-      return { ...base, state: 'meeting' };
-    default:
-      return { ...base, state: last ? 'last_five' : 'seated', pulse: last };
-  }
+  return regular;
 }

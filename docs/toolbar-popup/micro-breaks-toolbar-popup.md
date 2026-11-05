@@ -64,7 +64,7 @@ The toolbar icon is the Glow icon, with its pill acting as the battery. It drain
 | Chrome was closed | CHROME CLOSED · 40 MIN (amber) | Did you step away? | No answer counts as seated. | Yes, I moved + No, I kept working |
 | Mission running, popup opened | MISSION · PAUSED (amber) | 3:12 left | Step away to continue. | Go to your mission |
 
-Battery in the popup: same level and colour as the icon; grey and full for before hours, done and weekend; green and full for lunch and first run; empty for break due, skipped and waiting for a meeting; green and refilling during a mission.
+Battery in the popup: same level and colour as the icon; grey and full for before hours, done and weekend; green and full for lunch and for a first run before the day has started (once it drains, the first run shows the real battery, like the icon); empty for break due, skipped and waiting for a meeting; green and refilling during a mission.
 
 **Actions:**
 
