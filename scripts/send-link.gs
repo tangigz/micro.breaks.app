@@ -10,7 +10,7 @@
 
 const STORE_URL = 'https://chromewebstore.google.com/detail/microbreaks/ldieiojondcbnfaefdklpifeiamnpmnj?utm_source=email&utm_medium=send_to_laptop';
 const SENDER_NAME = 'micro.breaks';
-const SUBJECT = 'Your micro.breaks link';
+const SUBJECT = 'Install micro.breaks on Chrome to improve your workday';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PER_ADDRESS_SECONDS = 600; // one email per address every 10 minutes
 const DAILY_CAP = 90;            // stay under Gmail's ~100 a day on a free account
