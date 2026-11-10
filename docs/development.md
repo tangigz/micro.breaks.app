@@ -43,3 +43,17 @@ node scripts/prerender-landing.mjs
 ```
 
 It needs the Playwright browser (`npx playwright install chromium`) and is safe to run more than once.
+
+## Send-the-link email
+
+On a phone, the landing page asks for an email address and sends the install link to it, to open on a laptop. The sending is done by `scripts/send-link.gs`, a Google Apps Script that runs as you: emails come from your Gmail under the name "micro.breaks", and each request is logged in a Google Sheet. Until it is set up, `SEND_URL` in `docs/index.html` is empty and Send opens the visitor's mail app instead.
+
+To set it up, once:
+
+1. Create a Google Sheet (for example "micro.breaks link requests"), then open **Extensions → Apps Script**.
+2. Replace the editor's contents with `scripts/send-link.gs` and save.
+3. Pick `testSend` in the function menu and click **Run**. Accept the permissions (Gmail and Sheets, for your own account). You should get the email, and a row appears in the "Requests" tab.
+4. Click **Deploy → New deployment**, type **Web app**, "Execute as": **Me**, "Who has access": **Anyone**. Copy the web app URL (it ends in `/exec`).
+5. Paste it into `SEND_URL` in `docs/index.html`, run `node scripts/prerender-landing.mjs`, and ship the change.
+
+After changing the script, use **Deploy → Manage deployments → Edit → New version**, so the URL stays the same. A free Gmail account sends about 100 emails a day; the script stops at 90 and the page asks the visitor to try again.
