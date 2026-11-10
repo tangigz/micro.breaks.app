@@ -95,7 +95,7 @@ await promo.setContent(`<body style="margin:0;width:440px;height:280px;backgroun
   <div style="position:relative;width:104px;height:104px;flex-shrink:0">${icon.replace('width="128" height="128"', 'width="104" height="104"')}</div>
   <div style="position:relative;display:flex;flex-direction:column;gap:8px">
     <div style="font-size:34px;font-weight:700;letter-spacing:-0.03em;color:#F5F5F7">micro<span style="color:#6FCF7A">.</span>breaks</div>
-    <div style="font-size:17px;line-height:22px;font-weight:600;color:#A1A1A6;width:210px">Move a little, every hour you sit.</div>
+    <div style="font-size:17px;line-height:22px;font-weight:600;color:#A1A1A6;width:210px">A break reminder you can’t snooze.</div>
   </div>
 </body>`);
 await promo.waitForTimeout(300);

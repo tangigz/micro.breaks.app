@@ -23,10 +23,12 @@ export default defineConfig({
   srcDir: 'src',
   modules: ['@wxt-dev/module-react'],
   manifest: {
-    name: 'micro.breaks',
+    // The store title, with the words people search for. Chrome's short spots use short_name.
+    name: 'micro.breaks: Movement Break Reminder',
+    short_name: 'micro.breaks',
     // Shown as the summary on the Chrome Web Store, which reads it from here. 132 characters at most.
     description:
-      "Move a little, every hour you sit. A battery drains on your new tab; when it's empty, Chrome locks until you take a short break.",
+      "A break reminder you can't snooze. A battery drains on your new tab; when it's empty, Chrome locks until you move for 5 minutes.",
     ...(STORE ? {} : { key: KEY }),
     // The toolbar icon is drawn live (src/background/toolbar.ts); the store icon stays static
     action: { default_title: 'micro.breaks' },

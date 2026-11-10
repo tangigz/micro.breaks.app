@@ -10,13 +10,13 @@ Upload `.output/micro.breaks-store.zip`, built by `npm run package`. It has no f
 
 ## Store listing tab
 
-**Name**
+**Name** (75 characters at most; read from the zip's manifest, set in `wxt.config.ts`)
 
-    micro.breaks
+    micro.breaks: Movement Break Reminder
 
 **Summary** (132 characters at most; the dashboard reads it from the zip's manifest, set in `wxt.config.ts`)
 
-    Move a little, every hour you sit. A battery drains on your new tab; when it's empty, Chrome locks until you take a short break.
+    A break reminder you can't snooze. A battery drains on your new tab; when it's empty, Chrome locks until you move for 5 minutes.
 
 **Category:** Well-being (under Lifestyle). If it is not offered, Workflow & Planning.
 
