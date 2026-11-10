@@ -87,6 +87,7 @@ Decided: publish as Public, keep the video missions, keep the email, open Google
 - **Setup text by platform.** The notification and login-item instructions are written for macOS, for Windows, and generically for anything else.
 - **Homepage and privacy policy** are `docs/index.html` and `docs/privacy.html`, to be served by GitHub Pages. The listing texts, permission justifications and images are in `docs/store/`.
 - Known review risks are listed at the end of `docs/store/listing.md`.
+- **Store title and summary (11 November 2026, 0.2.1).** The manifest `name` is the store title, with the words people search for: "micro.breaks: Movement Break Reminder". `short_name` stays "micro.breaks" for Chrome's short spots, and every screen, page title and the toolbar tooltip keep "micro.breaks". Summary: "A break reminder you can't snooze. A battery drains on your new tab; when it's empty, Chrome locks until you move for 5 minutes." Its first sentence replaces "Move a little, every hour you sit." as the spec's tagline and the promo tile's line.
 
 ## Toolbar icon, popup, menu and tooltip (5 November 2026)
 
