@@ -72,13 +72,13 @@ test('notifications not allowed: breaks still come, inside Chrome, and the new t
   await home.evaluate(() => chrome.storage.local.set({ testNotificationsDeclined: true }));
   await engine.setClock(2030, 1, 7, 10);
   await engine.begin();
-  await expect(home.getByText('Notifications are off.')).toBeVisible();
+  await expect(home.getByText('Never miss a break.')).toBeVisible();
   // The cross hides the line, on this tab and the next ones
   await home.getByRole('button', { name: 'Dismiss' }).click();
-  await expect(home.getByText('Notifications are off.')).toHaveCount(0);
+  await expect(home.getByText('Never miss a break.')).toHaveCount(0);
   await home.reload();
   await expect(home.getByText('Next break in')).toBeVisible();
-  await expect(home.getByText('Notifications are off.')).toHaveCount(0);
+  await expect(home.getByText('Never miss a break.')).toHaveCount(0);
   await engine.advance(60);
   expect((await engine.send({ type: 'tick' })).break?.phase).toBe('prompt');
   await expect.poll(() => context.pages().some((p) => p.url().endsWith('/mission.html'))).toBe(true);
