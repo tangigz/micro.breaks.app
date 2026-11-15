@@ -116,6 +116,7 @@ Username and password: empty, there is no login. The field for instructions take
 - 0.1.4 was submitted on 10 October 2026 and published on 11 October 2026: https://chromewebstore.google.com/detail/microbreaks/ldieiojondcbnfaefdklpifeiamnpmnj
 - 0.1.5 fixes Google Calendar in the store version (the client now matches the published item) and replaces Google's raw error text with a plain sentence.
 - 0.2.0 makes the toolbar icon a live battery (drawn by the extension, same level and colour as the new tab), adds a popup on click that mirrors the new tab, a tooltip with the time to the next break, and three right-click items. New permission: `contextMenus` (no install warning).
+- 0.3.0: new store title and summary (the lock up front). Shorter install dialog: no host permission for PostHog or Google Calendar, notifications asked on the welcome screen (`notifications` becomes optional). New welcome flow: timer, meetings (Google Calendar), notifications, each optional step with "Not now". On the break: switch mission as often as wanted, and a 5-minute snooze once per break. In the Privacy tab: remove the two host justifications (PostHog, Google Calendar) and mark `notifications` as optional, as above.
 - Uploading a new package sends the item back through review; the live version stays up meanwhile.
 
 ## Known review risks
