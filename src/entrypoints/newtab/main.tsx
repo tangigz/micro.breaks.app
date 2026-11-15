@@ -9,14 +9,15 @@ import { applySavedTheme, applyTheme } from '@/ui/theme';
 import { mount } from '@/ui/mount';
 import '@/ui/tokens.css';
 import { HealthLine, NewTab } from './NewTab';
+import { notificationsAllowed } from '@/data/notifications';
 
 applySavedTheme();
 
-/** False when Chrome's notifications are blocked for micro.breaks. */
+/** False when micro.breaks may not show notifications: not allowed yet, or blocked in Chrome. */
 function useNotificationsAllowed(): boolean {
   const [allowed, setAllowed] = useState(true);
   useEffect(() => {
-    const check = () => void browser.notifications.getPermissionLevel().then((level) => setAllowed(level === 'granted'));
+    const check = () => void notificationsAllowed().then(setAllowed);
     check();
     window.addEventListener('focus', check);
     return () => window.removeEventListener('focus', check);

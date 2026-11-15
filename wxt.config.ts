@@ -6,6 +6,11 @@ import tailwindcss from '@tailwindcss/vite';
  * Web Store build (MB_STORE=1, `npm run package:store`) has no key: the store assigns its own ID.
  */
 const STORE = process.env.MB_STORE === '1';
+/**
+ * Browser tests can't click Chrome's permission prompt: their build has notifications granted at
+ * install. Everything else is the same as the real build.
+ */
+const E2E = process.env.MB_E2E === '1';
 
 /**
  * OAuth clients for Google Calendar: type "Chrome extension", created in Google Cloud for one
@@ -32,10 +37,14 @@ export default defineConfig({
     ...(STORE ? {} : { key: KEY }),
     // The toolbar icon is drawn live (src/background/toolbar.ts); the store icon stays static
     action: { default_title: 'micro.breaks' },
-    permissions: ['idle', 'alarms', 'notifications', 'storage', 'declarativeNetRequestWithHostAccess', 'identity', 'contextMenus'],
-    // Video missions embed YouTube (src/background/youtube.ts); meetings come from Google Calendar
-    // (src/background/calendar.ts); usage events go to PostHog (src/background/analytics.ts)
-    host_permissions: ['https://www.youtube-nocookie.com/*', 'https://www.googleapis.com/calendar/*', 'https://eu.i.posthog.com/*'],
+    // The install dialog shows the new tab, and youtube-nocookie.com for the video missions only.
+    // PostHog and Google Calendar accept the extension's requests (CORS): no host permission for them.
+    permissions: ['idle', 'alarms', 'storage', 'declarativeNetRequestWithHostAccess', 'identity', 'contextMenus', ...(E2E ? ['notifications'] : [])],
+    // Video missions embed YouTube, which needs a Referer the extension adds (src/background/youtube.ts).
+    // From a website YouTube would play an ad before the routine.
+    host_permissions: ['https://www.youtube-nocookie.com/*'],
+    // Asked on the welcome screen's "Allow", after saying why (src/data/notifications.ts)
+    optional_permissions: E2E ? [] : ['notifications'],
     // Read-only, busy times only: no event titles, no attendees
     ...(GOOGLE_CLIENT_ID
       ? { oauth2: { client_id: GOOGLE_CLIENT_ID, scopes: ['https://www.googleapis.com/auth/calendar.freebusy'] } }

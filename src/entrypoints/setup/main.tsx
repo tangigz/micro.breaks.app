@@ -16,6 +16,7 @@ import { TimerSentence } from '@/ui/TimerSentence';
 import { applySavedTheme, applyTheme } from '@/ui/theme';
 import { mount } from '@/ui/mount';
 import '@/ui/tokens.css';
+import { askForNotifications, notificationsAllowed } from '@/data/notifications';
 
 applySavedTheme();
 
@@ -166,7 +167,10 @@ function Setup() {
   const next: Action = { label: 'Continue', run: () => setView(null) };
 
   const allow = async () => {
-    if ((await browser.notifications.getPermissionLevel()) === 'granted') stay({ notifications: 1 });
+    // Chrome's own prompt, right after the explanation above. Called first, while the click counts.
+    if (!(await askForNotifications())) return;
+    if (await notificationsAllowed()) stay({ notifications: 1 });
+    // Granted to micro.breaks but blocked in Chrome's settings
     else await browser.tabs.create({ url: 'chrome://settings/content/notifications' });
   };
   const test = () => {

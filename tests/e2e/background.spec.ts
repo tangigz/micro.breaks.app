@@ -66,3 +66,15 @@ test('the state survives the service worker stopping', async ({ context, engine,
   expect(after.seatedSince).toBe(before.seatedSince);
   expect(after.seed).toBe(before.seed);
 });
+
+test('notifications not allowed: breaks still come, inside Chrome, and the new tab says so', async ({ context, engine, home }) => {
+  // As if the user declined Chrome's prompt on the welcome screen
+  await home.evaluate(() => chrome.storage.local.set({ testNotificationsDeclined: true }));
+  await engine.setClock(2030, 1, 7, 10);
+  await engine.begin();
+  await expect(home.getByText('Notifications are off.')).toBeVisible();
+  await engine.advance(60);
+  expect((await engine.send({ type: 'tick' })).break?.phase).toBe('prompt');
+  await expect.poll(() => context.pages().some((p) => p.url().endsWith('/mission.html'))).toBe(true);
+  expect(await engine.notifications()).toEqual([]);
+});

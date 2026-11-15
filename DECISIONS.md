@@ -106,6 +106,14 @@ Brief and designs: `docs/toolbar-popup/`.
 - **Tooltips for the states the brief doesn't list**: "Break skipped, next break in 52 min", "Break waiting for your meeting, until 11:30", "Mission paused, 3:12 left", "Chrome was closed. Did you step away?", "Your day starts at 9:00", "Weekend", "First break at 10:12".
 - **New permission: `contextMenus`**, for the three right-click items. Chrome shows no warning for it.
 
+## A shorter install dialog (15 November 2026)
+
+- **No host permission for PostHog or Google Calendar.** Both accept requests from the extension (CORS), so the install dialog no longer says micro.breaks can "read and change your data" on `eu.i.posthog.com` and `www.googleapis.com`.
+- **YouTube keeps its host permission.** Embedded from a website (a player page on the site was tried), YouTube plays an ad of about 15 s before the routine; embedded from the extension, it doesn't. Ad-free missions are worth the one line about `www.youtube-nocookie.com` (your choice).
+- **Notifications are asked on the welcome screen, not at install.** `notifications` is an optional permission: the "Allow" of step 2 shows Chrome's prompt, right under the explanation. Declined: breaks still open inside Chrome, and the new tab says "Notifications are off" with "Turn on". People who installed an earlier version keep the permission they granted and are not asked again.
+- **The install dialog now says:** replace the new tab page, read and change data on `www.youtube-nocookie.com`.
+- **Browser tests** can't click Chrome's permission prompt: their build (`MB_E2E=1`, `npm run e2e`) has notifications granted at install, and the storage key `testNotificationsDeclined` plays the declined case.
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.
