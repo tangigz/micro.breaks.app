@@ -64,7 +64,16 @@ const SIZES = {
  * The movement timer as one sentence. Every highlighted word is changed in place: scroll over it,
  * or click it and use its arrows or the arrow keys.
  */
-export function TimerSentence({ settings: saved, size = 'large' }: { settings: Settings; size?: keyof typeof SIZES }) {
+export function TimerSentence({
+  settings: saved,
+  size = 'large',
+  meetings = true,
+}: {
+  settings: Settings;
+  size?: keyof typeof SIZES;
+  /** The meetings card. The welcome flow has its own step for the calendar. */
+  meetings?: boolean;
+}) {
   const [edit, setEdit] = useState<Field | null>(null);
   const [calendarError, setCalendarError] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -170,47 +179,49 @@ export function TimerSentence({ settings: saved, size = 'large' }: { settings: S
       </div>
 
       {/* Meetings: always visible, so connecting the calendar is not hidden behind a word */}
-      <section aria-label="Meetings" className={`flex flex-col gap-3 border border-line ${look.card}`}>
-        <div className="flex items-center gap-4">
-          <img src={calendar} alt="" className={`shrink-0 ${look.cardIcon}`} />
-          <div className="flex min-w-0 grow flex-col gap-0.5 text-left">
-            <span className="text-[17px] leading-6 font-semibold text-ink">Protect my meetings</span>
-            <span className="text-[15px] leading-5 text-ink-2">
-              {saved.calendar ? 'No prompts while you are in a meeting.' : 'You will never be prompted during your meetings.'}
-            </span>
-          </div>
-          {saved.calendar ? (
-            <>
-              <span className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-pos-bg px-4 text-[15px] font-semibold whitespace-nowrap text-pos">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 6 9 17l-5-5" />
-                </svg>
-                Connected
+      {meetings && (
+        <section aria-label="Meetings" className={`flex flex-col gap-3 border border-line ${look.card}`}>
+          <div className="flex items-center gap-4">
+            <img src={calendar} alt="" className={`shrink-0 ${look.cardIcon}`} />
+            <div className="flex min-w-0 grow flex-col gap-0.5 text-left">
+              <span className="text-[17px] leading-6 font-semibold text-ink">Protect my meetings</span>
+              <span className="text-[15px] leading-5 text-ink-2">
+                {saved.calendar ? 'No prompts while you are in a meeting.' : 'You will never be prompted during your meetings.'}
               </span>
+            </div>
+            {saved.calendar ? (
+              <>
+                <span className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-pos-bg px-4 text-[15px] font-semibold whitespace-nowrap text-pos">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  Connected
+                </span>
+                <button
+                  disabled={busy}
+                  className="h-11 shrink-0 cursor-pointer px-1 text-[15px] text-ink-2 underline underline-offset-[3px]"
+                  onClick={() => void toggleCalendar(false)}
+                >
+                  Disconnect
+                </button>
+              </>
+            ) : (
               <button
                 disabled={busy}
-                className="h-11 shrink-0 cursor-pointer px-1 text-[15px] text-ink-2 underline underline-offset-[3px]"
-                onClick={() => void toggleCalendar(false)}
+                className="h-12 shrink-0 cursor-pointer rounded-full bg-pill px-5 text-[15px] font-semibold whitespace-nowrap text-ink"
+                onClick={() => void toggleCalendar(true)}
               >
-                Disconnect
+                Connect Google Calendar
               </button>
-            </>
-          ) : (
-            <button
-              disabled={busy}
-              className="h-12 shrink-0 cursor-pointer rounded-full bg-pill px-5 text-[15px] font-semibold whitespace-nowrap text-ink"
-              onClick={() => void toggleCalendar(true)}
-            >
-              Connect Google Calendar
-            </button>
-          )}
-        </div>
-        {calendarError && (
-          <div role="alert" className="text-left text-[15px] leading-5 text-att">
-            {calendarError}
+            )}
           </div>
-        )}
-      </section>
+          {calendarError && (
+            <div role="alert" className="text-left text-[15px] leading-5 text-att">
+              {calendarError}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

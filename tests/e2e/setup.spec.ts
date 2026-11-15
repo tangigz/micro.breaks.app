@@ -38,7 +38,9 @@ test('one screen: the battery fills as the three steps are completed', async ({ 
   await expect(home.getByRole('heading', { name: 'Charge your battery.' })).toBeVisible();
   await expect(home.getByRole('img', { name: 'Setup: 0 of 3 steps done' })).toBeVisible();
   await expect(home.getByRole('button', { name: 'Step 1, Set your movement timer' })).toHaveAttribute('aria-expanded', 'true');
-  await expect(home.getByRole('button', { name: 'Step 2, Make notifications stay' })).toHaveAttribute('aria-expanded', 'false');
+  await expect(home.getByRole('button', { name: 'Step 2, Protect your meetings' })).toHaveAttribute('aria-expanded', 'false');
+  // The meetings card belongs to step 2 now, not to the timer
+  await expect(home.getByRole('region', { name: 'Meetings' })).toHaveCount(0);
   await shot(home, 'steps-0');
   // A highlighted word is changed in place, with its own arrows
   await home.getByRole('button', { name: 'Interval, 60 min' }).click();
@@ -48,28 +50,27 @@ test('one screen: the battery fills as the three steps are completed', async ({ 
   await home.getByRole('button', { name: 'Continue' }).click();
   expect((await engine.send({ type: 'tick' })).settings.intervalMin).toBe(45);
 
-  // Step 2 opens by itself: notifications, with a real test notification
+  // Step 2 opens by itself: the calendar, recommended, and skippable
   await expect(home.getByRole('img', { name: 'Setup: 1 of 3 steps done' })).toBeVisible();
   await expect(home.getByText('Every 45 min, 9:00–18:00, every day.')).toBeVisible();
-  await home.getByRole('button', { name: 'Allow' }).click();
-  await expect(home.getByText('Allowed. Now set Chrome to Alerts')).toBeVisible();
+  await expect(home.getByText('micro.breaks will never lock Chrome during a meeting')).toBeVisible();
+  await expect(home.getByText('Read-only, busy times only: no titles, no attendees.')).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Connect Google Calendar' })).toBeVisible();
   await shot(home, 'steps-1');
-  await home.getByRole('button', { name: 'Send a test' }).click();
-  await expect(home.getByText('Did the test stay on screen until you closed it?')).toBeVisible();
-  await expect.poll(() => engine.notifications()).toEqual(['test']);
-  await home.getByRole('button', { name: 'Yes, it stayed' }).click();
+  await home.getByRole('button', { name: 'Not now' }).click();
 
-  // Step 3: Chrome at login
+  // Step 3: notifications, asked through Chrome's prompt (granted in the test build), no test notification
   await expect(home.getByRole('img', { name: 'Setup: 2 of 3 steps done' })).toBeVisible();
-  await home.getByRole('button', { name: 'Show me how' }).click();
-  await expect(home.getByText('System Settings › General › Login Items › “+” › Google Chrome.')).toBeVisible();
+  await expect(home.getByText('Not connected. You can connect it later from your movement timer.')).toBeVisible();
+  await expect(home.getByText("Allow notifications to know 5 min before each break, even when you're working in another app.")).toBeVisible();
   await shot(home, 'steps-2');
 
   // A closed tab resumes where it left off
   await home.reload();
   await expect(home.getByRole('img', { name: 'Setup: 2 of 3 steps done' })).toBeVisible();
-  await expect(home.getByRole('button', { name: 'Show me how' })).toBeVisible();
-  await home.getByRole('button', { name: 'Done', exact: true }).click();
+  await home.getByRole('button', { name: 'Allow' }).click();
+  await expect(home.getByText('On. A heads-up 5 min before each break.')).toBeVisible();
+  expect(await engine.notifications()).toEqual([]);
 
   // All set: full battery, same screen
   await expect(home.getByRole('heading', { name: 'All set.' })).toBeVisible();
@@ -99,7 +100,11 @@ test('one screen: the battery fills as the three steps are completed', async ({ 
   expect(new Set(tracked.map((e) => e.distinct_id)).size).toBe(1);
   expect(tracked[0]!.distinct_id).toMatch(/^[0-9a-f-]{36}$/);
   expect(tracked.at(-1)!.properties.$set).toEqual({ email: 'friend@example.com' });
-  expect(tracked.filter((e) => e.event === 'setup_step_done').map((e) => e.properties.step)).toEqual([1, 2, 3]);
+  expect(tracked.filter((e) => e.event === 'setup_step_done').map((e) => [e.properties.step, e.properties.skipped ?? false])).toEqual([
+    [1, false],
+    [2, true],
+    [3, false],
+  ]);
   expect(tracked.find((e) => e.event === 'setup_completed')!.properties).toMatchObject({ intervalMin: 45, days: 'every', calendar: false });
 });
 
@@ -109,10 +114,9 @@ test('in a small window, the steps stay on screen, at the same scale as the othe
   await home.getByRole('button', { name: "Let's start" }).click();
   await home.getByRole('button', { name: 'End of day, 18:00' }).click();
   await expect(home.getByRole('button', { name: 'Next value' })).toBeVisible();
-  // Nothing is pushed off screen, and the meetings card stays
-  await expect(home.getByRole('region', { name: 'Meetings' })).toBeInViewport({ ratio: 1 });
+  // Nothing is pushed off screen
   await expect(home.getByRole('button', { name: 'Continue' })).toBeInViewport({ ratio: 1 });
-  await expect(home.getByRole('button', { name: 'Step 3, Open Chrome at login' })).toBeInViewport({ ratio: 1 });
+  await expect(home.getByRole('button', { name: 'Step 3, Get a heads-up before each break' })).toBeInViewport({ ratio: 1 });
   await expect(home.getByRole('img', { name: 'Setup: 0 of 3 steps done' })).toBeInViewport({ ratio: 1 });
   // Not shrunk to fit: the scale only depends on the window, 570 / 720
   expect(await home.evaluate(() => Number((document.querySelector('#root > div') as HTMLElement).style.zoom))).toBeCloseTo(0.79, 2);
@@ -122,12 +126,12 @@ test('a done step can be reopened', async ({ home }) => {
   await home.getByLabel('Your email').fill('Friend@Example.com');
   await home.getByRole('button', { name: "Let's start" }).click();
   await home.getByRole('button', { name: 'Continue' }).click();
-  await expect(home.getByRole('button', { name: 'Allow' })).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Connect Google Calendar' })).toBeVisible();
   await home.getByRole('button', { name: 'Step 1, Set your movement timer, done' }).click();
   await expect(home.getByRole('button', { name: 'Interval, 60 min' })).toBeVisible();
-  await expect(home.getByRole('button', { name: 'Allow' })).toHaveCount(0);
+  await expect(home.getByRole('button', { name: 'Connect Google Calendar' })).toHaveCount(0);
   await home.getByRole('button', { name: 'Continue' }).click();
-  await expect(home.getByRole('button', { name: 'Allow' })).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Connect Google Calendar' })).toBeVisible();
 });
 
 test('movement timer: every highlighted word is editable', async ({ engine, home }) => {
@@ -186,17 +190,18 @@ test('movement timer: every highlighted word is editable', async ({ engine, home
   await expect(home.getByText('Every 45 min · 8:30–18:00')).toBeVisible();
 });
 
-test('notifications declined: "Not now" still finishes the welcome flow', async ({ home }) => {
+test('notifications declined: the step waits, "Not now" still finishes the welcome flow', async ({ home }) => {
   // As if the user clicked "Deny" in Chrome's prompt
   await home.evaluate(() => chrome.storage.local.set({ testNotificationsDeclined: true }));
   await home.reload();
   await home.getByLabel('Your email').fill('declined@example.com');
   await home.getByRole('button', { name: /Let.s start/ }).click();
   await home.getByRole('button', { name: 'Continue' }).click();
-  // Allow, then Chrome's prompt is declined: the step waits, "Not now" moves on
-  await home.getByRole('button', { name: 'Allow' }).click();
-  await expect(home.getByRole('button', { name: 'Send a test' })).toHaveCount(0);
   await home.getByRole('button', { name: 'Not now' }).click();
-  await expect(home.getByRole('button', { name: 'Step 2, Make notifications stay, done' })).toBeVisible();
+  await home.getByRole('button', { name: 'Allow' }).click();
+  await expect(home.getByRole('img', { name: 'Setup: 2 of 3 steps done' })).toBeVisible();
+  await home.getByRole('button', { name: 'Not now' }).click();
+  await expect(home.getByRole('button', { name: 'Step 3, Get a heads-up before each break, done' })).toBeVisible();
   await expect(home.getByText('Off for now. You can turn them on from the new tab.')).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Start moving' })).toBeVisible();
 });

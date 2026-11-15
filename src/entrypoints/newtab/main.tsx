@@ -36,8 +36,8 @@ async function turnOnNotifications(recheck: () => void): Promise<void> {
   if (!(await notificationsAllowed())) await browser.tabs.create({ url: 'chrome://settings/content/notifications' });
   // "Not now" on the welcome screen no longer holds: its step reads as done with notifications
   const { setup } = await browser.storage.local.get('setup');
-  if ((setup as { notifications?: number } | undefined)?.notifications === 4) {
-    await browser.storage.local.set({ setup: { ...(setup as object), notifications: 3 } });
+  if ((setup as { notify?: number } | undefined)?.notify === 2) {
+    await browser.storage.local.set({ setup: { ...(setup as object), notify: 1 } });
   }
   recheck();
 }

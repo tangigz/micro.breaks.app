@@ -116,6 +116,15 @@ Brief and designs: `docs/toolbar-popup/`.
 - **The notifications line says what they bring**: "Never miss a break. Turn on notifications for a heads-up 5 min before." (replaces "Notifications are off. micro.breaks can't reach you outside Chrome." from the spec). **Turn on shows Chrome's prompt right on the new tab** (your review: going through the welcome screen was a detour); if notifications are blocked in Chrome's own settings, that settings page opens instead. **It has a cross**, next to Turn on. Dismissed, it stays hidden on every new tab (`healthLineDismissed` in storage). Notifications can still be turned on from the welcome screen's step 2.
 - **Browser tests** can't click Chrome's permission prompt: their build (`MB_E2E=1`, `npm run e2e`) has notifications granted at install, and the storage key `testNotificationsDeclined` plays the declined case.
 
+## Welcome flow: timer, meetings, notifications (15 November 2026)
+
+- **Three steps after the email:** 1. Set your movement timer. 2. Protect your meetings (Google Calendar). 3. Get a heads-up before each break (notifications). Steps 2 and 3 are tagged *Recommended* and have **Not now**.
+- **Step 2 copy:** "Connect Google Calendar and micro.breaks will never lock Chrome during a meeting. Your break waits until the meeting ends." Note: "Read-only, busy times only: no titles, no attendees." Done: "Connected. No breaks during your meetings." Skipped: "Not connected. You can connect it later from your movement timer." The meetings card leaves step 1, and "All set." no longer offers the calendar.
+- **Step 3 copy:** "Allow notifications to know 5 min before each break, even when you're working in another app." On a Mac: "Then set Chrome to Alerts in System Settings › Notifications, so they stay on screen." Done: "On. A heads-up 5 min before each break." Skipped: "Off for now. You can turn them on from the new tab."
+- **No more "Open Chrome at login" step, and no test notification** (your review).
+- **Analytics:** `setup_step_done` step 2 is now the calendar and step 3 the notifications (before: notifications and Chrome at login). A skipped step carries `skipped: true`.
+- **A welcome flow started on an earlier version** keeps its completed timer step; the two new steps start fresh.
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.

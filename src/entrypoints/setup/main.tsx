@@ -24,45 +24,39 @@ applySavedTheme();
 interface Progress {
   started: boolean;
   timer: boolean;
-  /** 0 not allowed yet · 1 allowed · 2 test sent · 3 the test stayed · 4 "Not now": done, without notifications */
-  notifications: 0 | 1 | 2 | 3 | 4;
-  /** 0 to do · 1 "Show me how" open · 2 done */
-  login: 0 | 1 | 2;
+  /** Google Calendar: 0 to do · 1 connected · 2 "Not now" */
+  calendar: 0 | 1 | 2;
+  /** Notifications: 0 to do · 1 allowed · 2 "Not now" */
+  notify: 0 | 1 | 2;
 }
 
 /** The setup talks about system settings, which differ by platform. */
 const PLATFORM = /Mac/i.test(navigator.platform) ? 'mac' : /Win/i.test(navigator.platform) ? 'windows' : 'other';
 
-const NOTIFY = {
-  mac: [
-    'Allow notifications, then set Chrome to Alerts, not Banners, in System Settings › Notifications.',
-    'Allowed. Now set Chrome to Alerts in System Settings › Notifications, then test.',
-  ],
-  windows: [
-    'Allow notifications, then check that Google Chrome is on in Settings › System › Notifications.',
-    'Allowed. Now check that Google Chrome is on in Settings › System › Notifications, then test.',
-  ],
-  other: ['Allow notifications, then send a test.', 'Allowed. Now send a test.'],
+/** Notifications must stay on screen: where to set that, by platform. */
+const STAY_ON_SCREEN = {
+  mac: 'Then set Chrome to Alerts in System Settings › Notifications, so they stay on screen.',
+  windows: 'Then check that Google Chrome is on in Settings › System › Notifications.',
+  other: '',
 }[PLATFORM];
 
-const LOGIN_HOW = {
-  mac: 'System Settings › General › Login Items › “+” › Google Chrome.',
-  windows: 'Settings › Apps › Startup › Google Chrome.',
-  other: 'Add Google Chrome to the apps your system opens at login.',
-}[PLATFORM];
-
-const START: Progress = { started: false, timer: false, notifications: 0, login: 0 };
+const START: Progress = { started: false, timer: false, calendar: 0, notify: 0 };
 
 type Action = { label: string; run: () => void } | { label: string; href: string };
 
 interface Step {
   head: string;
+  /** Shown next to the title: the optional steps are recommended. */
+  tag?: string;
   /** One line once the step is done. */
   summary: string;
   /** Step 1 shows the editable sentence instead. */
   desc?: string;
+  /** A smaller line under the text. */
+  note?: string;
   main: Action;
   more: Action[];
+  error?: string;
 }
 
 function timerLine(s: Settings): string {
@@ -70,18 +64,7 @@ function timerLine(s: Settings): string {
   return `Every ${s.intervalMin} min, ${timeOfDay(s.dayStart)}–${timeOfDay(s.dayEnd)}, ${days}.`;
 }
 
-async function sendTest(): Promise<void> {
-  await browser.notifications.clear('test');
-  await browser.notifications.create('test', {
-    type: 'basic',
-    iconUrl: browser.runtime.getURL('/icon/128.png'),
-    title: 'Notifications work.',
-    message: "This one stays until you close it. That's how your breaks will reach you.",
-    requireInteraction: true,
-  });
-}
-
-function Pill({ action, primary, large }: { action: Action; primary?: boolean; large?: boolean }) {
+function Pill({ action, primary, large, disabled }: { action: Action; primary?: boolean; large?: boolean; disabled?: boolean }) {
   const look = primary ? 'bg-ink text-on-ink' : 'bg-pill text-ink';
   const size = large ? (primary ? 'h-14 px-9 text-[17px]' : 'h-14 px-6 text-[15px]') : 'h-12 px-6 text-[15px]';
   const className = `inline-flex cursor-pointer items-center rounded-full font-semibold whitespace-nowrap no-underline ${look} ${size}`;
@@ -90,7 +73,7 @@ function Pill({ action, primary, large }: { action: Action; primary?: boolean; l
       {action.label}
     </a>
   ) : (
-    <button className={className} onClick={action.run}>
+    <button className={`${className} disabled:cursor-wait disabled:opacity-60`} disabled={disabled} onClick={action.run}>
       {action.label}
     </button>
   );
@@ -120,7 +103,10 @@ const BENEFITS = [
 
 function Setup() {
   const engine = useEngine();
-  const [progress, setProgress] = useStored<Progress>('setup', START);
+  const [saved, setProgress] = useStored<Progress>('setup', START);
+  // Saved by an earlier version: its steps were different, only the timer carries over
+  const progress = saved && { ...START, started: saved.started, timer: saved.timer, calendar: saved.calendar ?? 0, notify: saved.notify ?? 0 };
+  const [connecting, setConnecting] = useState(false);
   const [view, setView] = useStored<number | null>('setupView', null);
   const [calendarError, setCalendarError] = useState<string>();
   const [email, setEmail] = useState('');
@@ -131,11 +117,11 @@ function Setup() {
     if (theme) applyTheme(theme);
   }, [theme]);
 
-  // "Turn on" from the new tab's health line lands on the notifications step
+  // ?step=2 opens that step directly
   useEffect(() => {
     const step = Number(new URLSearchParams(location.search).get('step'));
     if (progress && step >= 1 && step <= 3) {
-      setProgress({ ...progress, started: true, notifications: 0 });
+      setProgress({ ...progress, started: true });
       setView(step - 1);
       history.replaceState(null, '', location.pathname);
     }
@@ -152,14 +138,16 @@ function Setup() {
     setView(null);
   };
   /** A step is completed. Counted once, even if the step is reopened and confirmed again. */
-  const completeStep = (step: number, patch: Partial<Progress>) => {
-    if (!done[step - 1]) track('setup_step_done', { step });
+  const completeStep = (step: number, patch: Partial<Progress>, skipped = false) => {
+    if (!done[step - 1]) track('setup_step_done', { step, ...(skipped ? { skipped } : {}) });
     advance(patch);
   };
   /** Records progress without leaving the step. */
   const stay = (patch: Partial<Progress>) => setProgress({ ...p, ...patch });
 
-  const done = [p.timer, p.notifications >= 3, p.login >= 2];
+  // Connected from the settings too: the calendar step reads the setting itself
+  const calendarOn = state.settings.calendar;
+  const done = [p.timer, calendarOn || p.calendar === 2, p.notify > 0];
   const count = done.filter(Boolean).length;
   const first = done.indexOf(false);
   const welcome = !p.started && !state.setupDone;
@@ -169,16 +157,18 @@ function Setup() {
   const allow = async () => {
     // Chrome's own prompt, right after the explanation above. Called first, while the click counts.
     if (!(await askForNotifications())) return;
-    if (await notificationsAllowed()) stay({ notifications: 1 });
+    if (await notificationsAllowed()) completeStep(3, { notify: 1 });
     // Granted to micro.breaks but blocked in Chrome's settings
     else await browser.tabs.create({ url: 'chrome://settings/content/notifications' });
   };
-  const test = () => {
-    void sendTest();
-    stay({ notifications: p.notifications >= 3 ? 3 : 2 });
+  const connect = async () => {
+    setConnecting(true);
+    const error = await setCalendar(true);
+    setConnecting(false);
+    setCalendarError(error);
+    if (!error) completeStep(2, { calendar: 1 });
   };
 
-  const n = p.notifications;
   const steps: Step[] = [
     {
       head: 'Set your movement timer',
@@ -187,45 +177,26 @@ function Setup() {
       more: [],
     },
     {
-      head: 'Make notifications stay',
-      summary: n === 4 ? 'Off for now. You can turn them on from the new tab.' : 'Notifications stay until you close them.',
-      desc:
-        n === 0 || n === 4
-          ? NOTIFY[0]
-          : n === 1
-            ? NOTIFY[1]
-            : n === 2
-              ? 'Did the test stay on screen until you closed it?'
-              : 'Notifications stay until you close them.',
-      main:
-        n === 0 || n === 4
-          ? { label: 'Allow', run: () => void allow() }
-          : n === 1
-            ? { label: 'Send a test', run: test }
-            : n === 2
-              ? { label: 'Yes, it stayed', run: () => completeStep(2, { notifications: 3 }) }
-              : next,
-      // Declining Chrome's prompt must not block the welcome flow: "Not now" finishes the step without them
-      more:
-        n === 0
-          ? [{ label: 'Not now', run: () => completeStep(2, { notifications: 4 }) }]
-          : n === 2
-            ? [{ label: 'Send again', run: test }]
-            : n === 3
-              ? [{ label: 'Send a test', run: test }]
-              : [],
+      head: 'Protect your meetings',
+      tag: 'Recommended',
+      summary: calendarOn
+        ? 'Connected. No breaks during your meetings.'
+        : 'Not connected. You can connect it later from your movement timer.',
+      desc: 'Connect Google Calendar and micro.breaks will never lock Chrome during a meeting. Your break waits until the meeting ends.',
+      note: 'Read-only, busy times only: no titles, no attendees.',
+      main: calendarOn ? next : { label: connecting ? 'Connecting…' : 'Connect Google Calendar', run: () => void connect() },
+      more: calendarOn || p.calendar === 2 ? [] : [{ label: 'Not now', run: () => completeStep(2, { calendar: 2 }, true) }],
+      error: calendarError,
     },
     {
-      head: 'Open Chrome at login',
-      summary: 'Chrome opens when you log in. micro.breaks starts with it.',
-      desc:
-        p.login === 0
-          ? 'micro.breaks only runs when Chrome is open. Add it to login items to suggest when to move more precisely.'
-          : p.login === 1
-            ? LOGIN_HOW
-            : 'Chrome opens when you log in. micro.breaks starts with it.',
-      main: p.login >= 2 ? next : { label: 'Done', run: () => completeStep(3, { login: 2 }) },
-      more: [{ label: 'Show me how', run: () => stay({ login: 1 }) }],
+      head: 'Get a heads-up before each break',
+      tag: 'Recommended',
+      summary: p.notify === 1 ? 'On. A heads-up 5 min before each break.' : 'Off for now. You can turn them on from the new tab.',
+      desc: "Allow notifications to know 5 min before each break, even when you're working in another app.",
+      note: STAY_ON_SCREEN || undefined,
+      main: p.notify === 1 ? next : { label: 'Allow', run: () => void allow() },
+      // Declining Chrome's prompt must not block the welcome flow: "Not now" finishes the step without them
+      more: p.notify === 0 ? [{ label: 'Not now', run: () => completeStep(3, { notify: 2 }, true) }] : [],
     },
   ];
   const start = async () => {
@@ -334,8 +305,8 @@ function Setup() {
               {all && (
                 <div className="text-[22px] leading-[30px] font-semibold tracking-[-0.01em] text-ink-2">
                   {state.settings.calendar
-                    ? "It runs on its own whenever you're working. No prompts during your meetings."
-                    : "It runs on its own whenever you're working. Optional: connect Google Calendar so prompts wait for your meetings to end."}
+                    ? "It runs on its own whenever you're working. No breaks during your meetings."
+                    : "It runs on its own whenever you're working."}
                 </div>
               )}
             </div>
@@ -365,19 +336,32 @@ function Setup() {
                         )}
                       </span>
                       <span className="flex min-w-0 flex-col">
-                        <span className={`text-[20px] leading-7 font-semibold ${isOpen || done[k] ? 'text-ink' : 'text-ink-2'}`}>{step.head}</span>
+                        <span className="flex items-center gap-2.5">
+                          <span className={`text-[20px] leading-7 font-semibold ${isOpen || done[k] ? 'text-ink' : 'text-ink-2'}`}>{step.head}</span>
+                          {step.tag && !done[k] && (
+                            <span className="rounded-full bg-pos-bg px-2.5 py-0.5 text-[13px] leading-[18px] font-semibold text-pos">{step.tag}</span>
+                          )}
+                        </span>
                         {done[k] && !isOpen && <span className="truncate text-[15px] leading-5 text-ink-2">{step.summary}</span>}
                       </span>
                     </button>
                     {isOpen && (
                       <div className="flex flex-col gap-4 px-6 pt-1 pb-4">
                         {k === 0 ? (
-                          <TimerSentence settings={state.settings} size="small" />
+                          <TimerSentence settings={state.settings} size="small" meetings={false} />
                         ) : (
-                          <div className="text-[17px] leading-6 text-ink-2">{step.desc}</div>
+                          <div className="flex flex-col gap-1.5">
+                            <div className="text-[17px] leading-6 text-ink-2">{step.desc}</div>
+                            {step.note && <div className="text-[15px] leading-5 text-ink-3">{step.note}</div>}
+                          </div>
+                        )}
+                        {step.error && (
+                          <div role="alert" className="text-[15px] leading-5 text-att">
+                            {step.error}
+                          </div>
                         )}
                         <div className="flex items-center gap-3">
-                          <Pill primary action={step.main} />
+                          <Pill primary action={step.main} disabled={k === 1 && connecting} />
                           {step.more.map((a) => (
                             <Pill key={a.label} action={a} />
                           ))}
@@ -397,22 +381,7 @@ function Setup() {
                     large
                     action={state.setupDone ? { label: 'Back to micro.breaks', href: '/newtab.html' } : { label: 'Start moving', run: () => void start() }}
                   />
-                  {state.settings.calendar ? (
-                    <span className="inline-flex h-14 items-center gap-2 rounded-full bg-pos-bg px-[22px] text-[15px] font-semibold whitespace-nowrap text-pos">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 6 9 17l-5-5" />
-                      </svg>
-                      Google Calendar connected
-                    </span>
-                  ) : (
-                    <Pill large action={{ label: 'Connect Google Calendar', run: () => void setCalendar(true).then(setCalendarError) }} />
-                  )}
                 </div>
-                {calendarError && (
-                  <div role="alert" className="text-[15px] leading-5 text-att">
-                    {calendarError}
-                  </div>
-                )}
               </div>
             )}
           </div>
