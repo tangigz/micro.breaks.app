@@ -80,6 +80,18 @@ function Info({ state, now, view }: { state: State; now: number; view: NewTabVie
       );
     case 'weekend':
       return <Quiet label={weekday(now)} title="Weekend." sub={`See you ${nextDay(state.settings, now)} at ${start}.`} />;
+    case 'snoozed':
+      return (
+        <Countdown
+          label={
+            <>
+              <span className="text-att">Snoozed</span> · Your break is back in
+            </>
+          }
+          ms={view.nextInMs}
+          since={<span className="text-ink">{duration(view.seatedMs)}</span>}
+        />
+      );
     case 'skipped':
       return (
         <Countdown
@@ -247,6 +259,8 @@ function batteryLabel(view: NewTabView): string {
       return 'Battery recharging during lunch';
     case 'skipped':
       return 'Battery empty, the break was skipped';
+    case 'snoozed':
+      return 'Battery empty, the break was snoozed';
     case 'held':
       return 'Battery empty, your break is due';
     default:
@@ -258,7 +272,7 @@ export function NewTab({ state, now }: { state: State; now: number }) {
   const view = newTabView(state, now);
   const { mode } = view;
   const idle = mode === 'setup' || mode === 'before' || mode === 'done' || mode === 'weekend';
-  const still = idle || mode === 'held' || mode === 'skipped';
+  const still = idle || mode === 'held' || mode === 'skipped' || mode === 'snoozed';
   const gap = mode === 'gap';
   const level = idle ? 100 : view.level;
 

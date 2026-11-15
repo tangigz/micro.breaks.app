@@ -14,6 +14,7 @@ export const SAMPLE_STATES: { state: ToolbarState; label: string }[] = [
   { state: 'meeting', label: 'In a meeting' },
   { state: 'held', label: 'Break waiting for a meeting' },
   { state: 'skipped', label: 'Break skipped' },
+  { state: 'snoozed', label: 'Break snoozed' },
   { state: 'due', label: 'Break due' },
   { state: 'mission', label: 'Mission running, popup opened' },
   { state: 'gap', label: 'Chrome was closed' },
@@ -53,6 +54,8 @@ export function sampleView(state: ToolbarState, now: number): ToolbarView {
       return { ...base, level: 0, dueAt: at(11, 5), meetingUntil: at(11, 30) };
     case 'skipped':
       return { ...base, level: 0, nextInMs: 52 * MIN, seatedMs: 68 * MIN };
+    case 'snoozed':
+      return { ...base, level: 0, nextInMs: 3 * MIN + 41_000, seatedMs: 64 * MIN, pulse: true };
     case 'due':
       return { ...base, level: 0 };
     case 'mission':

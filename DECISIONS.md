@@ -125,6 +125,13 @@ Brief and designs: `docs/toolbar-popup/`.
 - **Analytics:** `setup_step_done` step 2 is now the calendar and step 3 the notifications (before: notifications and Chrome at login). A skipped step carries `skipped: true`.
 - **A welcome flow started on an earlier version** keeps its completed timer step; the two new steps start fresh.
 
+## The break: switch freely, one snooze (15 November 2026)
+
+- **Switch mission as often as wanted** (your review: some missions don't suit the open space). The shuffled deck still shows every mission before one comes back. Clicked with the mouse, the button lets go of the focus, so Enter still starts the mission.
+- **Snooze 5 min, once per break.** A quiet link next to "Skip (it'll cost you)", on a break that came due (a break started with "Start a break now" has its free "Not now" instead), and only before the mission starts. Chrome is free for 5 minutes; the battery stays empty; there is no heads-up for the snooze's end. Then the prompt comes back, locked, without the snooze: the mission, or the skip challenge (which skips the break, as before).
+- **While snoozed**, the new tab says "Snoozed · Your break is back in 4:59", the toolbar icon pulses, the tooltip says "Break snoozed, back in 4 min", and the popup shows "Snoozed · Back in". Walking away 5 min still recharges the battery and ends the break.
+- **The snooze comes back with the next break**: after a mission, a recharge or a skip. Logged as `prompt_snoozed` (local event log; not sent to PostHog).
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.

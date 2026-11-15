@@ -379,15 +379,83 @@ describe('the break', () => {
     expect(seen[7]).not.toBe(seen[6]);
   });
 
-  it('switches the mission once per break', () => {
+  it('switches the mission as often as wanted, through the whole deck before a repeat', () => {
     const sim = working();
     sim.wait(60);
-    const first = sim.state.break!.missionId;
-    sim.send({ type: 'switch_mission' });
-    const second = sim.state.break!.missionId;
-    expect(second).not.toBe(first);
-    sim.send({ type: 'switch_mission' });
-    expect(sim.state.break!.missionId).toBe(second);
+    const seen = [sim.state.break!.missionId];
+    for (let i = 0; i < MISSIONS.length - 1; i++) {
+      sim.send({ type: 'switch_mission' });
+      seen.push(sim.state.break!.missionId);
+    }
+    expect(new Set(seen).size).toBe(MISSIONS.length);
+    expect(sim.state.break?.phase).toBe('prompt');
+  });
+
+  it('snooze: once per break, Chrome free for 5 min, then the prompt comes back without it', () => {
+    const sim = working();
+    sim.wait(60);
+    expect(sim.state.break?.phase).toBe('prompt');
+    sim.send({ type: 'snooze' });
+    expect(sim.state.break).toBeNull();
+    expect(isLocked(sim.state)).toBe(false);
+    expect(sim.state.snoozed).toBe(true);
+    expect(sim.logged('prompt_snoozed')).toHaveLength(1);
+    expect(newTabView(sim.state, sim.now)).toMatchObject({ mode: 'snoozed', nextInMs: 5 * MIN });
+    expect(toolbarView(sim.state, sim.now)).toMatchObject({ state: 'snoozed', level: 0, pulse: true });
+    // No heads-up for the snooze's end; the battery stays empty
+    sim.wait(4);
+    expect(sim.notified('headsup')).toBe(1);
+    expect(batteryLevel(sim.state, sim.now)).toBe(0);
+    sim.wait(1);
+    expect(sim.state.break?.phase).toBe('prompt');
+    expect(sim.notified('break')).toBe(2);
+    // A second snooze does nothing: the mission or the skip challenge
+    sim.send({ type: 'snooze' });
+    expect(sim.state.break?.phase).toBe('prompt');
+    expect(sim.logged('prompt_snoozed')).toHaveLength(1);
+  });
+
+  it('snooze comes back with the next break, after a mission or a skip', () => {
+    const sim = working();
+    sim.wait(60);
+    sim.send({ type: 'snooze' });
+    sim.wait(5);
+    sim.doMission();
+    // A video mission ends with its button, not by being away
+    if (sim.state.break) sim.send({ type: 'video_done' });
+    expect(sim.state.outcome?.kind).toBe('mission');
+    expect(sim.state.snoozed).toBe(false);
+    sim.back();
+    sim.wait(60);
+    sim.send({ type: 'snooze' });
+    expect(sim.state.break).toBeNull();
+    sim.wait(5);
+    sim.passSkip();
+    expect(sim.state.snoozed).toBe(false);
+  });
+
+  it('snooze: not on a break started early, nor during a mission', () => {
+    const sim = working();
+    sim.send({ type: 'start_break_now' });
+    sim.send({ type: 'snooze' });
+    expect(sim.state.break?.phase).toBe('prompt');
+    sim.send({ type: 'cancel_break' });
+    sim.wait(60);
+    sim.send({ type: 'start_mission' });
+    sim.send({ type: 'snooze' });
+    expect(sim.state.break?.phase).toBe('mission');
+  });
+
+  it('walking away during a snooze recharges the battery', () => {
+    const sim = working();
+    sim.wait(60);
+    sim.send({ type: 'snooze' });
+    sim.send({ type: 'idle', state: 'locked' });
+    sim.wait(5);
+    sim.back();
+    expect(sim.state.outcome?.kind).toBe('away');
+    expect(sim.state.break).toBeNull();
+    expect(sim.state.snoozed).toBe(false);
   });
 
   it('only counts down while the user is away, crediting the idle detection delay', () => {
