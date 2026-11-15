@@ -9,24 +9,43 @@ import { applySavedTheme, applyTheme } from '@/ui/theme';
 import { mount } from '@/ui/mount';
 import '@/ui/tokens.css';
 import { HealthLine, NewTab } from './NewTab';
+import { askForNotifications, notificationsAllowed } from '@/data/notifications';
+import { useStored } from '@/data/stored';
 
 applySavedTheme();
 
-/** False when Chrome's notifications are blocked for micro.breaks. */
-function useNotificationsAllowed(): boolean {
+/** False when micro.breaks may not show notifications: not allowed yet, or blocked in Chrome. */
+function useNotificationsAllowed(): [boolean, () => void] {
   const [allowed, setAllowed] = useState(true);
+  const check = () => void notificationsAllowed().then(setAllowed);
   useEffect(() => {
-    const check = () => void browser.notifications.getPermissionLevel().then((level) => setAllowed(level === 'granted'));
     check();
     window.addEventListener('focus', check);
     return () => window.removeEventListener('focus', check);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  return allowed;
+  return [allowed, check];
+}
+
+/**
+ * "Turn on": Chrome's prompt, right here. Granted but blocked in Chrome's own settings, the prompt
+ * can't help: the settings page opens instead.
+ */
+async function turnOnNotifications(recheck: () => void): Promise<void> {
+  if (!(await askForNotifications())) return;
+  if (!(await notificationsAllowed())) await browser.tabs.create({ url: 'chrome://settings/content/notifications' });
+  // "Not now" on the welcome screen no longer holds: its step reads as done with notifications
+  const { setup } = await browser.storage.local.get('setup');
+  if ((setup as { notifications?: number } | undefined)?.notifications === 4) {
+    await browser.storage.local.set({ setup: { ...(setup as object), notifications: 3 } });
+  }
+  recheck();
 }
 
 function App() {
   const engine = useEngine();
-  const allowed = useNotificationsAllowed();
+  const [allowed, recheckNotifications] = useNotificationsAllowed();
+  const [healthDismissed, setHealthDismissed] = useStored('healthLineDismissed', false);
   const theme = engine?.state.settings.theme;
 
   useEffect(() => {
@@ -51,7 +70,9 @@ function App() {
       ) : (
         <NewTab {...engine} />
       )}
-      {!allowed && engine.state.setupDone && <HealthLine />}
+      {!allowed && engine.state.setupDone && healthDismissed === false && (
+        <HealthLine onTurnOn={() => void turnOnNotifications(recheckNotifications)} onDismiss={() => setHealthDismissed(true)} />
+      )}
       <DevBar {...engine} />
     </Frame>
   );

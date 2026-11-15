@@ -141,6 +141,21 @@ async function setCalendar(connect: boolean): Promise<string | undefined> {
   await dispatch({ type: 'tick' });
 }
 
+let listeningToNotifications = false;
+
+/** A click on a notification, or on its button. Only once notifications are allowed. */
+function listenToNotifications(): void {
+  if (listeningToNotifications || !browser.notifications) return;
+  listeningToNotifications = true;
+  const onNotification = (id: string) => {
+    void browser.notifications.clear(id);
+    if (id === 'headsup') void dispatch({ type: 'start_break_now' });
+    else void show(MISSION);
+  };
+  browser.notifications.onClicked.addListener(onNotification);
+  browser.notifications.onButtonClicked.addListener(onNotification);
+}
+
 /** The popup's and the right-click menu's targets. */
 async function open(target: MenuTarget | 'mission'): Promise<void> {
   if (target === 'start') await dispatch({ type: 'start_break_now' });
@@ -198,13 +213,9 @@ export function start(): void {
     if (windowId !== browser.windows.WINDOW_ID_NONE) void enforceLock();
   });
 
-  const onNotification = (id: string) => {
-    void browser.notifications.clear(id);
-    if (id === 'headsup') void dispatch({ type: 'start_break_now' });
-    else void show(MISSION);
-  };
-  browser.notifications.onClicked.addListener(onNotification);
-  browser.notifications.onButtonClicked.addListener(onNotification);
+  // Notifications exist once the user has allowed them on the welcome screen
+  listenToNotifications();
+  browser.permissions.onAdded.addListener(listenToNotifications);
 
   browser.contextMenus.onClicked.addListener((info) => void open(info.menuItemId as MenuTarget));
 

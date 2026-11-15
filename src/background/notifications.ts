@@ -1,5 +1,6 @@
 import { browser } from 'wxt/browser';
 import type { NotificationKind } from '@/engine';
+import { notificationsGranted } from '@/data/notifications';
 
 function seated(min: number): string {
   const h = Math.floor(min / 60);
@@ -26,6 +27,8 @@ const COPY: Record<NotificationKind, (seatedMin?: number) => { title: string; me
 
 /** Notifications stay until closed. The kind is the id, so each one replaces its predecessor. */
 export async function notify(kind: NotificationKind, seatedMin?: number): Promise<void> {
+  // Not allowed (yet): reminders still happen inside Chrome, the new tab says notifications are off
+  if (!(await notificationsGranted())) return;
   const { title, message, action } = COPY[kind](seatedMin);
   await browser.notifications.clear(kind);
   await browser.notifications.create(kind, {
@@ -39,5 +42,5 @@ export async function notify(kind: NotificationKind, seatedMin?: number): Promis
 }
 
 export async function clearNotification(kind: NotificationKind): Promise<void> {
-  await browser.notifications.clear(kind);
+  if (await notificationsGranted()) await browser.notifications.clear(kind);
 }

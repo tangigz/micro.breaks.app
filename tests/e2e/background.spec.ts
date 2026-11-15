@@ -66,3 +66,36 @@ test('the state survives the service worker stopping', async ({ context, engine,
   expect(after.seatedSince).toBe(before.seatedSince);
   expect(after.seed).toBe(before.seed);
 });
+
+test('notifications not allowed: breaks still come, inside Chrome, and the new tab says so', async ({ context, engine, home }) => {
+  // As if the user declined Chrome's prompt on the welcome screen
+  await home.evaluate(() => chrome.storage.local.set({ testNotificationsDeclined: true }));
+  await engine.setClock(2030, 1, 7, 10);
+  await engine.begin();
+  await expect(home.getByText('Never miss a break.')).toBeVisible();
+  // The cross hides the line, on this tab and the next ones
+  await home.getByRole('button', { name: 'Dismiss' }).click();
+  await expect(home.getByText('Never miss a break.')).toHaveCount(0);
+  await home.reload();
+  await expect(home.getByText('Next break in')).toBeVisible();
+  await expect(home.getByText('Never miss a break.')).toHaveCount(0);
+  await engine.advance(60);
+  expect((await engine.send({ type: 'tick' })).break?.phase).toBe('prompt');
+  await expect.poll(() => context.pages().some((p) => p.url().endsWith('/mission.html'))).toBe(true);
+  expect(await engine.notifications()).toEqual([]);
+});
+
+test('"Turn on" asks right from the new tab: declined, the line stays; allowed, it goes', async ({ engine, home }) => {
+  await home.evaluate(() => chrome.storage.local.set({ testNotificationsDeclined: true }));
+  await engine.setClock(2030, 1, 7, 10);
+  await engine.begin();
+  // Chrome's prompt is declined: still on the new tab, the line stays
+  await home.getByRole('button', { name: 'Turn on' }).click();
+  await expect(home.getByText('Never miss a break.')).toBeVisible();
+  expect(home.url()).toMatch(/newtab\.html$/);
+  // Allowed (the test build has them granted): the line goes, no detour through the welcome screen
+  await home.evaluate(() => chrome.storage.local.remove('testNotificationsDeclined'));
+  await home.getByRole('button', { name: 'Turn on' }).click();
+  await expect(home.getByText('Never miss a break.')).toHaveCount(0);
+  expect(home.url()).toMatch(/newtab\.html$/);
+});

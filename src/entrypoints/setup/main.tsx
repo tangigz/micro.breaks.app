@@ -16,6 +16,7 @@ import { TimerSentence } from '@/ui/TimerSentence';
 import { applySavedTheme, applyTheme } from '@/ui/theme';
 import { mount } from '@/ui/mount';
 import '@/ui/tokens.css';
+import { askForNotifications, notificationsAllowed } from '@/data/notifications';
 
 applySavedTheme();
 
@@ -23,8 +24,8 @@ applySavedTheme();
 interface Progress {
   started: boolean;
   timer: boolean;
-  /** 0 not allowed yet · 1 allowed · 2 test sent · 3 the test stayed */
-  notifications: 0 | 1 | 2 | 3;
+  /** 0 not allowed yet · 1 allowed · 2 test sent · 3 the test stayed · 4 "Not now": done, without notifications */
+  notifications: 0 | 1 | 2 | 3 | 4;
   /** 0 to do · 1 "Show me how" open · 2 done */
   login: 0 | 1 | 2;
 }
@@ -166,7 +167,10 @@ function Setup() {
   const next: Action = { label: 'Continue', run: () => setView(null) };
 
   const allow = async () => {
-    if ((await browser.notifications.getPermissionLevel()) === 'granted') stay({ notifications: 1 });
+    // Chrome's own prompt, right after the explanation above. Called first, while the click counts.
+    if (!(await askForNotifications())) return;
+    if (await notificationsAllowed()) stay({ notifications: 1 });
+    // Granted to micro.breaks but blocked in Chrome's settings
     else await browser.tabs.create({ url: 'chrome://settings/content/notifications' });
   };
   const test = () => {
@@ -184,9 +188,9 @@ function Setup() {
     },
     {
       head: 'Make notifications stay',
-      summary: 'Notifications stay until you close them.',
+      summary: n === 4 ? 'Off for now. You can turn them on from the new tab.' : 'Notifications stay until you close them.',
       desc:
-        n === 0
+        n === 0 || n === 4
           ? NOTIFY[0]
           : n === 1
             ? NOTIFY[1]
@@ -194,14 +198,22 @@ function Setup() {
               ? 'Did the test stay on screen until you closed it?'
               : 'Notifications stay until you close them.',
       main:
-        n === 0
+        n === 0 || n === 4
           ? { label: 'Allow', run: () => void allow() }
           : n === 1
             ? { label: 'Send a test', run: test }
             : n === 2
               ? { label: 'Yes, it stayed', run: () => completeStep(2, { notifications: 3 }) }
               : next,
-      more: n === 2 ? [{ label: 'Send again', run: test }] : n >= 3 ? [{ label: 'Send a test', run: test }] : [],
+      // Declining Chrome's prompt must not block the welcome flow: "Not now" finishes the step without them
+      more:
+        n === 0
+          ? [{ label: 'Not now', run: () => completeStep(2, { notifications: 4 }) }]
+          : n === 2
+            ? [{ label: 'Send again', run: test }]
+            : n === 3
+              ? [{ label: 'Send a test', run: test }]
+              : [],
     },
     {
       head: 'Open Chrome at login',

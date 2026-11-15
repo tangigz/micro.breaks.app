@@ -191,12 +191,12 @@ function GapQuestion({ view }: { view: NewTabView }) {
   );
 }
 
-/** Notifications blocked: micro.breaks can't reach you outside Chrome. */
-export function HealthLine() {
+/** Notifications off: micro.breaks can't reach you outside Chrome. The cross hides it for good. */
+export function HealthLine({ onTurnOn, onDismiss }: { onTurnOn: () => void; onDismiss: () => void }) {
   return (
     <div
       role="status"
-      className="absolute bottom-10 left-1/2 flex h-12 -translate-x-1/2 items-center gap-3 rounded-full bg-att-bg pr-2 pl-5 text-[15px] leading-5 whitespace-nowrap"
+      className="absolute bottom-10 left-1/2 flex h-12 -translate-x-1/2 items-center gap-3 rounded-full bg-att-bg pr-1.5 pl-5 text-[15px] leading-5 whitespace-nowrap"
     >
       <svg
         width="18"
@@ -208,20 +208,30 @@ export function HealthLine() {
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5" />
-        <path d="M17 17H3s3-2 3-9a4.67 4.67 0 0 1 .3-1.7" />
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
         <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-        <path d="m2 2 20 20" />
       </svg>
       <span>
-        <b className="font-semibold">Notifications are off.</b> micro.breaks can't reach you outside Chrome.
+        <b className="font-semibold">Never miss a break.</b> Turn on notifications for a heads-up 5 min before.
       </span>
-      <a
-        href="/setup.html?step=2"
-        className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-[15px] font-semibold text-on-ink no-underline"
-      >
-        Turn on
-      </a>
+      {/* The action and its dismiss sit together, at the end */}
+      <span className="flex items-center gap-1">
+        <button
+          className="inline-flex h-9 cursor-pointer items-center rounded-full bg-ink px-4 text-[15px] font-semibold text-on-ink"
+          onClick={onTurnOn}
+        >
+          Turn on
+        </button>
+        <button
+          aria-label="Dismiss"
+          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-2 hover:text-ink"
+          onClick={onDismiss}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </span>
     </div>
   );
 }

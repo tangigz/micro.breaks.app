@@ -106,6 +106,16 @@ Brief and designs: `docs/toolbar-popup/`.
 - **Tooltips for the states the brief doesn't list**: "Break skipped, next break in 52 min", "Break waiting for your meeting, until 11:30", "Mission paused, 3:12 left", "Chrome was closed. Did you step away?", "Your day starts at 9:00", "Weekend", "First break at 10:12".
 - **New permission: `contextMenus`**, for the three right-click items. Chrome shows no warning for it.
 
+## A shorter install dialog (15 November 2026)
+
+- **No host permission for PostHog or Google Calendar.** Both accept requests from the extension (CORS), so the install dialog no longer says micro.breaks can "read and change your data" on `eu.i.posthog.com` and `www.googleapis.com`.
+- **YouTube keeps its host permission.** Embedded from a website (a player page on the site was tried), YouTube plays an ad of about 15 s before the routine; embedded from the extension, it doesn't. Ad-free missions are worth the one line about `www.youtube-nocookie.com` (your choice).
+- **Notifications are asked on the welcome screen, not at install.** `notifications` is an optional permission: the "Allow" of step 2 shows Chrome's prompt, right under the explanation. Declined: breaks still open inside Chrome, and the new tab suggests turning them on. People who installed an earlier version keep the permission they granted and are not asked again.
+- **The install dialog now says:** replace the new tab page, read and change data on `www.youtube-nocookie.com`.
+- **"Not now" on step 2.** Declining Chrome's prompt must not block the welcome flow ("Start moving" needs the three steps): "Not now" finishes the step without notifications ("Off for now. You can turn them on from the new tab.").
+- **The notifications line says what they bring**: "Never miss a break. Turn on notifications for a heads-up 5 min before." (replaces "Notifications are off. micro.breaks can't reach you outside Chrome." from the spec). **Turn on shows Chrome's prompt right on the new tab** (your review: going through the welcome screen was a detour); if notifications are blocked in Chrome's own settings, that settings page opens instead. **It has a cross**, next to Turn on. Dismissed, it stays hidden on every new tab (`healthLineDismissed` in storage). Notifications can still be turned on from the welcome screen's step 2.
+- **Browser tests** can't click Chrome's permission prompt: their build (`MB_E2E=1`, `npm run e2e`) has notifications granted at install, and the storage key `testNotificationsDeclined` plays the declined case.
+
 ## Smaller rules, agreed as defaults
 
 - A prompt due or open when lunch starts is dismissed; the battery recharges.
