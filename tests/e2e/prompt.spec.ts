@@ -17,7 +17,7 @@ const activeTab = (home: Page) =>
     return contexts.find((c) => c.tabId === active?.id)?.documentUrl ?? '';
   });
 
-test('break prompt: one mission, switch once, Enter starts it', async ({ context, engine, home }) => {
+test('break prompt: one mission, switch as often as wanted, Enter starts it', async ({ context, engine, home }) => {
   await engine.setClock(2030, 1, 7, 10);
   await engine.begin();
   const state = await engine.advance(60);
@@ -32,10 +32,13 @@ test('break prompt: one mission, switch once, Enter starts it', async ({ context
   await page.waitForTimeout(300);
   await page.screenshot({ path: 'test-results/prompt/prompt.png' });
 
-  // Switch swaps the mission once per break
+  // Switch swaps the mission, as often as wanted
   await page.getByRole('button', { name: 'Switch mission' }).click();
-  await expect(page.getByRole('button', { name: 'Switched. One switch per break.' })).toBeDisabled();
   await expect(card.locator('div.text-\\[44px\\]')).not.toHaveText(first);
+  const second = await card.locator('div.text-\\[44px\\]').innerText();
+  await page.getByRole('button', { name: 'Switch mission' }).click();
+  await expect(card.locator('div.text-\\[44px\\]')).not.toHaveText(second);
+  await expect(page.getByRole('button', { name: 'Switch mission' })).toBeEnabled();
   await page.screenshot({ path: 'test-results/prompt/switched.png' });
 
   await page.keyboard.press('Enter');
@@ -85,4 +88,39 @@ test('"Start a break now" opens the prompt with a free way out', async ({ contex
   await page.getByRole('button', { name: 'Not now' }).click();
   await expect(page).toHaveURL(/newtab\.html$/);
   expect((await engine.send({ type: 'tick' })).break).toBeNull();
+});
+
+test('snooze: once per break, Chrome is free for 5 min, then the prompt comes back without it', async ({ context, engine, home }) => {
+  await engine.setClock(2030, 1, 7, 10);
+  await engine.begin();
+  await engine.advance(60);
+  const page = await missionPage(context);
+  await page.getByRole('button', { name: 'Snooze 5 min' }).click();
+
+  // The break tab gives way to the new tab, with the snooze's countdown; Chrome is free
+  await expect(page).toHaveURL(/newtab\.html$/);
+  await expect(page.getByText('Snoozed')).toBeVisible();
+  await expect(page.getByRole('timer')).toHaveText(/^[45]:\d\d$/);
+  await page.screenshot({ path: 'test-results/prompt/snoozed.png' });
+  await home.bringToFront();
+  await home.waitForTimeout(600);
+  expect(await activeTab(home)).not.toMatch(/mission\.html$/);
+  expect(await home.evaluate(() => chrome.action.getTitle({}))).toMatch(/^micro\.breaks · Break snoozed, back in [45] min$/);
+
+  // 5 min later the prompt is back, locked, with no second snooze
+  await engine.advance(5);
+  const again = await missionPage(context);
+  await expect(again.getByRole('heading', { name: 'Time to move.' })).toBeVisible();
+  await expect.poll(() => activeTab(home)).toMatch(/mission\.html$/);
+  await expect(again.getByRole('button', { name: "Skip (it'll cost you)" })).toBeVisible();
+  await expect(again.getByRole('button', { name: 'Snooze 5 min' })).toHaveCount(0);
+});
+
+test('snooze: not offered on a break started with "Start a break now"', async ({ context, engine }) => {
+  await engine.setClock(2030, 1, 7, 10);
+  await engine.begin();
+  await engine.send({ type: 'start_break_now' });
+  const page = await missionPage(context);
+  await expect(page.getByRole('button', { name: 'Not now' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Snooze 5 min' })).toHaveCount(0);
 });

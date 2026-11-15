@@ -17,11 +17,15 @@ export const DEFAULT_SETTINGS: Settings = {
   awayBreakMin: 5,
 };
 
+/** A snooze frees Chrome for this long, once per break. */
+export const SNOOZE_MIN = 5;
+
 export function initialState(now: number, seed: number): State {
   return {
     settings: { ...DEFAULT_SETTINGS },
     setupDone: false,
     firstPromptShown: false,
+    snoozed: false,
     seed,
     day: null,
     dayStarted: false,
@@ -65,6 +69,7 @@ export function step(prev: State, input: Input, now: number): StepResult {
     s.dueAt = null;
     s.headsUpFor = null;
     s.heldSince = null;
+    s.snoozed = false;
   };
 
   const endBreak = () => {
@@ -112,6 +117,7 @@ export function step(prev: State, input: Input, now: number): StepResult {
     s.skipsToday += 1;
     s.dueAt = now + interval();
     s.headsUpFor = null;
+    s.snoozed = false;
     s.outcome = { kind: 'skipped', at: now };
   };
 
@@ -263,12 +269,26 @@ export function step(prev: State, input: Input, now: number): StepResult {
       break;
 
     case 'switch_mission':
-      // Switch swaps the mission once per break
-      if (b?.phase === 'prompt' && !b.switched) {
+      // As often as wanted: some missions don't suit the open space. The deck still avoids repeats.
+      if (b?.phase === 'prompt') {
         const from = b.missionId;
         b.missionId = draw(s);
         b.switched = true;
         log('mission_switched', { from, to: b.missionId });
+      }
+      break;
+
+    case 'snooze':
+      // Once per break, on a break that came due: Chrome is free for 5 min, then the prompt comes
+      // back without a snooze. After that, the skip challenge is the only way out.
+      if (b?.phase === 'prompt' && !b.voluntary && !b.skip && !s.snoozed) {
+        log('prompt_snoozed', { missionId: b.missionId, minutes: SNOOZE_MIN });
+        endBreak();
+        s.snoozed = true;
+        s.dueAt = now + SNOOZE_MIN * MIN;
+        // No heads-up for the snooze's end: the prompt simply comes back
+        s.headsUpFor = s.dueAt;
+        s.heldSince = null;
       }
       break;
 

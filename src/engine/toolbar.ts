@@ -13,6 +13,7 @@ export type ToolbarState =
   | 'meeting'
   | 'held'
   | 'skipped'
+  | 'snoozed'
   | 'due'
   | 'mission'
   | 'gap'
@@ -90,6 +91,9 @@ export function toolbarView(s: State, now: number): ToolbarView {
         return { ...base, state: 'held', level: 0 };
       case 'skipped':
         return { ...base, state: 'skipped', level: 0, pulse: last };
+      case 'snoozed':
+        // Five minutes of grace: the battery is empty and the break is on its way back
+        return { ...base, state: 'snoozed', level: 0, pulse: true };
       case 'meeting':
         return { ...base, state: 'meeting' };
       default:

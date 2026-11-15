@@ -18,6 +18,7 @@ export type NewTabMode =
   | 'lunch'
   | 'held'
   | 'skipped'
+  | 'snoozed'
   | 'meeting'
   | 'normal';
 
@@ -48,6 +49,7 @@ export function newTabView(s: State, now: number): NewTabView {
   else if (m >= settings.dayEnd) mode = 'done';
   else if (inLunch(settings, now)) mode = 'lunch';
   else if (s.heldSince != null && meeting) mode = 'held';
+  else if (s.snoozed && !s.break) mode = 'snoozed';
   else if (skipped) mode = 'skipped';
   else if (meeting) mode = 'meeting';
 

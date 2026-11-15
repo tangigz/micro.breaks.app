@@ -63,6 +63,11 @@ export interface State {
   setupDone: boolean;
   /** A break prompt has opened at least once: until then the toolbar popup shows its first-run state. */
   firstPromptShown: boolean;
+  /**
+   * This break's one free snooze has been used: Chrome is free until `dueAt`, then the prompt comes
+   * back without it. Cleared when the battery recharges or the break is skipped.
+   */
+  snoozed: boolean;
   seed: number;
   /** Local day being tracked, YYYY-MM-DD. */
   day: string | null;
@@ -100,6 +105,7 @@ export type Input =
   | { type: 'start_break_now' }
   | { type: 'cancel_break' }
   | { type: 'switch_mission' }
+  | { type: 'snooze' }
   | { type: 'start_mission'; videoDurationMs?: number }
   | { type: 'video_duration'; ms: number }
   | { type: 'video_done' }
@@ -122,6 +128,7 @@ export type EventType =
   | 'prompt_shown'
   | 'prompt_held'
   | 'prompt_dismissed'
+  | 'prompt_snoozed'
   | 'mission_switched'
   | 'mission_started'
   | 'mission_paused'

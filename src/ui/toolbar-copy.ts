@@ -15,6 +15,8 @@ export function tooltip(view: ToolbarView, settings: Settings): string {
         return `Next break in ${minutesLeft(view.nextInMs)}`;
       case 'skipped':
         return `Break skipped, next break in ${minutesLeft(view.nextInMs)}`;
+      case 'snoozed':
+        return `Break snoozed, back in ${minutesLeft(view.nextInMs)}`;
       case 'meeting':
         return `In a meeting until ${timeAt(view.meetingUntil!)}`;
       case 'held':
@@ -76,6 +78,15 @@ export function popupCopy(view: ToolbarView, settings: Settings, now: number): P
       return {
         eyebrow: 'Skipped · Next break in',
         eyebrowTone: 'neg',
+        headline: clock(view.nextInMs),
+        big: true,
+        line: since,
+        action: 'start',
+      };
+    case 'snoozed':
+      return {
+        eyebrow: 'Snoozed · Back in',
+        eyebrowTone: 'att',
         headline: clock(view.nextInMs),
         big: true,
         line: since,
