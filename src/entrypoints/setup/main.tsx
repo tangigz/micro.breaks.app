@@ -30,16 +30,6 @@ interface Progress {
   notify: 0 | 1 | 2;
 }
 
-/** The setup talks about system settings, which differ by platform. */
-const PLATFORM = /Mac/i.test(navigator.platform) ? 'mac' : /Win/i.test(navigator.platform) ? 'windows' : 'other';
-
-/** Notifications must stay on screen: where to set that, by platform. */
-const STAY_ON_SCREEN = {
-  mac: 'Then set Chrome to Alerts in System Settings › Notifications, so they stay on screen.',
-  windows: 'Then check that Google Chrome is on in Settings › System › Notifications.',
-  other: '',
-}[PLATFORM];
-
 const START: Progress = { started: false, timer: false, calendar: 0, notify: 0 };
 
 type Action = { label: string; run: () => void } | { label: string; href: string };
@@ -193,7 +183,6 @@ function Setup() {
       tag: 'Recommended',
       summary: p.notify === 1 ? 'On. A heads-up 5 min before each break.' : 'Off for now. You can turn them on from the new tab.',
       desc: "Allow notifications to know 5 min before each break, even when you're working in another app.",
-      note: STAY_ON_SCREEN || undefined,
       main: p.notify === 1 ? next : { label: 'Allow', run: () => void allow() },
       // Declining Chrome's prompt must not block the welcome flow: "Not now" finishes the step without them
       more: p.notify === 0 ? [{ label: 'Not now', run: () => completeStep(3, { notify: 2 }, true) }] : [],

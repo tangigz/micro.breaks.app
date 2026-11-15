@@ -120,7 +120,7 @@ Brief and designs: `docs/toolbar-popup/`.
 
 - **Three steps after the email:** 1. Set your movement timer. 2. Protect your meetings (Google Calendar). 3. Get a heads-up before each break (notifications). Steps 2 and 3 are tagged *Recommended* and have **Not now**.
 - **Step 2 copy:** "Connect Google Calendar and micro.breaks will never lock Chrome during a meeting. Your break waits until the meeting ends." Note: "Read-only, busy times only: no titles, no attendees." Done: "Connected. No breaks during your meetings." Skipped: "Not connected. You can connect it later from your movement timer." The meetings card leaves step 1, and "All set." no longer offers the calendar.
-- **Step 3 copy:** "Allow notifications to know 5 min before each break, even when you're working in another app." On a Mac: "Then set Chrome to Alerts in System Settings › Notifications, so they stay on screen." Done: "On. A heads-up 5 min before each break." Skipped: "Off for now. You can turn them on from the new tab."
+- **Step 3 copy:** "Allow notifications to know 5 min before each break, even when you're working in another app." No platform tip under it (your review). Done: "On. A heads-up 5 min before each break." Skipped: "Off for now. You can turn them on from the new tab."
 - **No more "Open Chrome at login" step, and no test notification** (your review).
 - **Analytics:** `setup_step_done` step 2 is now the calendar and step 3 the notifications (before: notifications and Chrome at login). A skipped step carries `skipped: true`.
 - **A welcome flow started on an earlier version** keeps its completed timer step; the two new steps start fresh.
