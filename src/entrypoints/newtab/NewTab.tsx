@@ -192,7 +192,7 @@ function GapQuestion({ view }: { view: NewTabView }) {
 }
 
 /** Notifications off: micro.breaks can't reach you outside Chrome. The cross hides it for good. */
-export function HealthLine({ onDismiss }: { onDismiss: () => void }) {
+export function HealthLine({ onTurnOn, onDismiss }: { onTurnOn: () => void; onDismiss: () => void }) {
   return (
     <div
       role="status"
@@ -216,12 +216,12 @@ export function HealthLine({ onDismiss }: { onDismiss: () => void }) {
       </span>
       {/* The action and its dismiss sit together, at the end */}
       <span className="flex items-center gap-1">
-        <a
-          href="/setup.html?step=2"
-          className="inline-flex h-9 items-center rounded-full bg-ink px-4 text-[15px] font-semibold text-on-ink no-underline"
+        <button
+          className="inline-flex h-9 cursor-pointer items-center rounded-full bg-ink px-4 text-[15px] font-semibold text-on-ink"
+          onClick={onTurnOn}
         >
           Turn on
-        </a>
+        </button>
         <button
           aria-label="Dismiss"
           className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-2 hover:text-ink"

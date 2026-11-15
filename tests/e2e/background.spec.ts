@@ -84,3 +84,18 @@ test('notifications not allowed: breaks still come, inside Chrome, and the new t
   await expect.poll(() => context.pages().some((p) => p.url().endsWith('/mission.html'))).toBe(true);
   expect(await engine.notifications()).toEqual([]);
 });
+
+test('"Turn on" asks right from the new tab: declined, the line stays; allowed, it goes', async ({ engine, home }) => {
+  await home.evaluate(() => chrome.storage.local.set({ testNotificationsDeclined: true }));
+  await engine.setClock(2030, 1, 7, 10);
+  await engine.begin();
+  // Chrome's prompt is declined: still on the new tab, the line stays
+  await home.getByRole('button', { name: 'Turn on' }).click();
+  await expect(home.getByText('Never miss a break.')).toBeVisible();
+  expect(home.url()).toMatch(/newtab\.html$/);
+  // Allowed (the test build has them granted): the line goes, no detour through the welcome screen
+  await home.evaluate(() => chrome.storage.local.remove('testNotificationsDeclined'));
+  await home.getByRole('button', { name: 'Turn on' }).click();
+  await expect(home.getByText('Never miss a break.')).toHaveCount(0);
+  expect(home.url()).toMatch(/newtab\.html$/);
+});
