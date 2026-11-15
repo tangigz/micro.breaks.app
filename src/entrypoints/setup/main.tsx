@@ -24,8 +24,8 @@ applySavedTheme();
 interface Progress {
   started: boolean;
   timer: boolean;
-  /** 0 not allowed yet · 1 allowed · 2 test sent · 3 the test stayed */
-  notifications: 0 | 1 | 2 | 3;
+  /** 0 not allowed yet · 1 allowed · 2 test sent · 3 the test stayed · 4 "Not now": done, without notifications */
+  notifications: 0 | 1 | 2 | 3 | 4;
   /** 0 to do · 1 "Show me how" open · 2 done */
   login: 0 | 1 | 2;
 }
@@ -188,9 +188,9 @@ function Setup() {
     },
     {
       head: 'Make notifications stay',
-      summary: 'Notifications stay until you close them.',
+      summary: n === 4 ? 'Off for now. You can turn them on from the new tab.' : 'Notifications stay until you close them.',
       desc:
-        n === 0
+        n === 0 || n === 4
           ? NOTIFY[0]
           : n === 1
             ? NOTIFY[1]
@@ -198,14 +198,22 @@ function Setup() {
               ? 'Did the test stay on screen until you closed it?'
               : 'Notifications stay until you close them.',
       main:
-        n === 0
+        n === 0 || n === 4
           ? { label: 'Allow', run: () => void allow() }
           : n === 1
             ? { label: 'Send a test', run: test }
             : n === 2
               ? { label: 'Yes, it stayed', run: () => completeStep(2, { notifications: 3 }) }
               : next,
-      more: n === 2 ? [{ label: 'Send again', run: test }] : n >= 3 ? [{ label: 'Send a test', run: test }] : [],
+      // Declining Chrome's prompt must not block the welcome flow: "Not now" finishes the step without them
+      more:
+        n === 0
+          ? [{ label: 'Not now', run: () => completeStep(2, { notifications: 4 }) }]
+          : n === 2
+            ? [{ label: 'Send again', run: test }]
+            : n === 3
+              ? [{ label: 'Send a test', run: test }]
+              : [],
     },
     {
       head: 'Open Chrome at login',

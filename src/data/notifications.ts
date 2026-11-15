@@ -10,9 +10,13 @@ const NOTIFICATIONS = { permissions: ['notifications'] } as Parameters<typeof br
 /** Browser tests: behave as if the user had declined (their build has notifications granted at install). */
 const TEST_DECLINED_KEY = 'testNotificationsDeclined';
 
+async function declinedInTests(): Promise<boolean> {
+  return (await browser.storage.local.get(TEST_DECLINED_KEY))[TEST_DECLINED_KEY] === true;
+}
+
 /** True once the user has allowed notifications for micro.breaks. */
 export async function notificationsGranted(): Promise<boolean> {
-  if ((await browser.storage.local.get(TEST_DECLINED_KEY))[TEST_DECLINED_KEY] === true) return false;
+  if (await declinedInTests()) return false;
   return browser.permissions.contains(NOTIFICATIONS);
 }
 
@@ -23,6 +27,9 @@ export async function notificationsAllowed(): Promise<boolean> {
 }
 
 /** Shows Chrome's prompt. Must run straight from a click. Resolves true at once if already granted. */
-export function askForNotifications(): Promise<boolean> {
-  return browser.permissions.request(NOTIFICATIONS);
+export async function askForNotifications(): Promise<boolean> {
+  // First, with nothing awaited before it: Chrome only shows the prompt straight after a click
+  const granted = await browser.permissions.request(NOTIFICATIONS);
+  // Browser tests: as if the user clicked "Deny" in Chrome's prompt
+  return granted && !(await declinedInTests());
 }

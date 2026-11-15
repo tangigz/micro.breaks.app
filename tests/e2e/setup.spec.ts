@@ -185,3 +185,18 @@ test('movement timer: every highlighted word is editable', async ({ engine, home
   await expect(home).toHaveURL(/newtab\.html$/);
   await expect(home.getByText('Every 45 min · 8:30–18:00')).toBeVisible();
 });
+
+test('notifications declined: "Not now" still finishes the welcome flow', async ({ home }) => {
+  // As if the user clicked "Deny" in Chrome's prompt
+  await home.evaluate(() => chrome.storage.local.set({ testNotificationsDeclined: true }));
+  await home.reload();
+  await home.getByLabel('Your email').fill('declined@example.com');
+  await home.getByRole('button', { name: /Let.s start/ }).click();
+  await home.getByRole('button', { name: 'Continue' }).click();
+  // Allow, then Chrome's prompt is declined: the step waits, "Not now" moves on
+  await home.getByRole('button', { name: 'Allow' }).click();
+  await expect(home.getByRole('button', { name: 'Send a test' })).toHaveCount(0);
+  await home.getByRole('button', { name: 'Not now' }).click();
+  await expect(home.getByRole('button', { name: 'Step 2, Make notifications stay, done' })).toBeVisible();
+  await expect(home.getByText('Off for now. You can turn them on from the new tab.')).toBeVisible();
+});
