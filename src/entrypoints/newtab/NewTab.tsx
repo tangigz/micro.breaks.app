@@ -191,8 +191,8 @@ function GapQuestion({ view }: { view: NewTabView }) {
   );
 }
 
-/** Notifications blocked: micro.breaks can't reach you outside Chrome. */
-export function HealthLine() {
+/** Notifications off: micro.breaks can't reach you outside Chrome. The cross hides it for good. */
+export function HealthLine({ onDismiss }: { onDismiss: () => void }) {
   return (
     <div
       role="status"
@@ -222,6 +222,15 @@ export function HealthLine() {
       >
         Turn on
       </a>
+      <button
+        aria-label="Dismiss"
+        className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-2 hover:text-ink"
+        onClick={onDismiss}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
     </div>
   );
 }

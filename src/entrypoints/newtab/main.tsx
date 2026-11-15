@@ -10,6 +10,7 @@ import { mount } from '@/ui/mount';
 import '@/ui/tokens.css';
 import { HealthLine, NewTab } from './NewTab';
 import { notificationsAllowed } from '@/data/notifications';
+import { useStored } from '@/data/stored';
 
 applySavedTheme();
 
@@ -28,6 +29,7 @@ function useNotificationsAllowed(): boolean {
 function App() {
   const engine = useEngine();
   const allowed = useNotificationsAllowed();
+  const [healthDismissed, setHealthDismissed] = useStored('healthLineDismissed', false);
   const theme = engine?.state.settings.theme;
 
   useEffect(() => {
@@ -52,7 +54,9 @@ function App() {
       ) : (
         <NewTab {...engine} />
       )}
-      {!allowed && engine.state.setupDone && <HealthLine />}
+      {!allowed && engine.state.setupDone && healthDismissed === false && (
+        <HealthLine onDismiss={() => setHealthDismissed(true)} />
+      )}
       <DevBar {...engine} />
     </Frame>
   );
