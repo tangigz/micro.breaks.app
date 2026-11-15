@@ -79,15 +79,20 @@ test('disconnecting stops holding prompts', async ({ engine, home }) => {
   expect((await engine.advance(60)).break?.phase).toBe('prompt');
 });
 
-test('"All set." offers Google Calendar', async ({ home }) => {
+test('welcome flow, step 2: Connect Google Calendar', async ({ engine, home }) => {
   await fakeCalendar(home, []);
-  await home.evaluate(() => chrome.storage.local.set({ setup: { started: true, timer: true, notifications: 3, login: 2 } }));
+  await home.evaluate(() => chrome.storage.local.set({ setup: { started: true, timer: true, calendar: 0, notify: 0 } }));
   await home.reload();
-  await expect(home.getByRole('heading', { name: 'All set.' })).toBeVisible();
-  await expect(home.getByText('Optional: connect Google Calendar so prompts wait for your meetings to end.')).toBeVisible();
+  await expect(home.getByRole('button', { name: 'Step 2, Protect your meetings' })).toHaveAttribute('aria-expanded', 'true');
+  await expect(home.getByText('Recommended').first()).toBeVisible();
   await home.getByRole('button', { name: 'Connect Google Calendar' }).click();
-  await expect(home.getByText('Google Calendar connected')).toBeVisible();
-  await expect(home.getByText('No prompts during your meetings.')).toBeVisible();
+  // Done: the step closes, the next one opens
+  await expect(home.getByRole('button', { name: 'Step 2, Protect your meetings, done' })).toBeVisible();
+  await expect(home.getByText('Connected. No breaks during your meetings.')).toBeVisible();
+  expect((await engine.send({ type: 'tick' })).settings.calendar).toBe(true);
+  await home.getByRole('button', { name: 'Allow' }).click();
+  await expect(home.getByRole('heading', { name: 'All set.' })).toBeVisible();
+  await expect(home.getByText("It runs on its own whenever you're working. No breaks during your meetings.")).toBeVisible();
   await home.waitForTimeout(1200);
   await home.screenshot({ path: 'test-results/calendar/all-set.png' });
 });
